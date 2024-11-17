@@ -50,3 +50,5 @@ if __name__ == "__main__":
     z = encoder(x)
     print("Output shape:", z.shape)  # 输出形状应该是 (1, 512, 2, 2)
 
+    print(encoder)
+
