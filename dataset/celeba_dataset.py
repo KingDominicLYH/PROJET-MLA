@@ -6,13 +6,14 @@ import cv2
 from tqdm import tqdm  # 用于显示进度条 / For progress bar visualization
 
 
-def preprocess_and_save_dataset(img_dir, attr_file, save_path, img_size=256):
+def preprocess_and_save_dataset(img_dir, attr_file, save_path, img_size=256, batch_size=10000):
     """
-    Preprocess images and labels, and save them as a .pth file
+    Preprocess images and labels, and save them in batches to reduce memory usage.
     :param img_dir: Path to the directory containing images
     :param attr_file: Path to the attribute file
     :param save_path: Path to save the processed data
     :param img_size: Target size for resized images
+    :param batch_size: Number of images to process in each batch
     """
     print("Processing and saving dataset...")
 
@@ -33,30 +34,51 @@ def preprocess_and_save_dataset(img_dir, attr_file, save_path, img_size=256):
     labels = (labels + 1) / 2  # Convert -1 to 0, keep 1 as 1
     labels = torch.tensor(labels)
 
-    # Process images
-    images = []
-    print("Processing images...")
-    for img_name in tqdm(image_ids, desc="Processing images", unit="image"):
-        img_path = os.path.join(img_dir, img_name)
-        image = cv2.imread(img_path)
-        assert image is not None, f"Image not found: {img_path}"
+    # Prepare for batch processing
+    num_images = len(image_ids)
+    batches = (num_images + batch_size - 1) // batch_size  # Total number of batches
 
-        # Crop and resize
-        image = image[20:-20, :, :]  # Crop the central region
-        image = cv2.resize(image, (img_size, img_size), interpolation=cv2.INTER_AREA)
+    print(f"Processing {num_images} images in {batches} batches of size {batch_size}...")
 
-        # Normalize and convert to tensor
-        image = image.astype(np.float32) / 255.0
-        image = (image * 2) - 1  # Normalize to [-1, 1]
-        image = np.transpose(image, (2, 0, 1))  # Convert to (C, H, W)
-        images.append(image)
+    # Temporary storage for images and labels
+    all_images = []
+    all_labels = []
 
-    # Convert images to a tensor
-    images = torch.tensor(np.stack(images))  # Stack all images into a single tensor
+    for batch_idx in range(batches):
+        start_idx = batch_idx * batch_size
+        end_idx = min(start_idx + batch_size, num_images)
+        batch_image_ids = image_ids[start_idx:end_idx]
+        batch_labels = labels[start_idx:end_idx]
+        batch_images = []
+
+        for img_name in tqdm(batch_image_ids, desc=f"Processing batch {batch_idx + 1}/{batches}", unit="image"):
+            img_path = os.path.join(img_dir, img_name)
+            image = cv2.imread(img_path)
+            assert image is not None, f"Image not found: {img_path}"
+
+            # Crop and resize
+            image = image[20:-20, :, :]  # Crop the central region
+            image = cv2.resize(image, (img_size, img_size), interpolation=cv2.INTER_AREA)
+
+            # Normalize and convert to tensor
+            image = image.astype(np.float32) / 255.0
+            image = (image * 2) - 1  # Normalize to [-1, 1]
+            image = np.transpose(image, (2, 0, 1))  # Convert to (C, H, W)
+            batch_images.append(image)
+
+        # Convert batch to tensor and append to all_images and all_labels
+        batch_images = torch.tensor(np.stack(batch_images))
+        all_images.append(batch_images)
+        all_labels.append(batch_labels)
+
+    # Concatenate all batches
+    print("Concatenating all batches...")
+    all_images = torch.cat(all_images, dim=0)
+    all_labels = torch.cat(all_labels, dim=0)
 
     # Save processed data
     print(f"Saving processed dataset to {save_path}...")
-    torch.save({"images": images, "labels": labels}, save_path)
+    torch.save({"images": all_images, "labels": all_labels}, save_path)
     print("Dataset saved!")
 
 
@@ -108,41 +130,6 @@ class CelebADataset(Dataset):
         return image, label
 
 
-# if __name__ == "__main__":
-#     # Configuration
-#     IMG_DIR = "img_align_celeba"  # Image folder
-#     ATTR_FILE = "list_attr_celeba.txt"  # Attribute file
-#     PROCESSED_FILE = "celeba_dataset.pth"  # Processed dataset file
-#     IMG_SIZE = 256  # Image resize dimensions
-#
-#     # Preprocess and save dataset (only run this once)
-#     if not os.path.isfile(PROCESSED_FILE):
-#         preprocess_and_save_dataset(IMG_DIR, ATTR_FILE, PROCESSED_FILE, img_size=IMG_SIZE)
-#
-#     # Load datasets for each split
-#     train_dataset = CelebADataset(processed_file=PROCESSED_FILE, split="train")
-#     val_dataset = CelebADataset(processed_file=PROCESSED_FILE, split="val")
-#     test_dataset = CelebADataset(processed_file=PROCESSED_FILE, split="test")
-#
-#     # Create DataLoaders
-#     train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-#     val_loader = DataLoader(val_dataset, batch_size=64, shuffle=False)
-#     test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
-#
-#     # Example usage
-#     for images, labels in train_loader:
-#         print(f"Train batch - images shape: {images.shape}, labels shape: {labels.shape}")
-#         break
-#
-#     for images, labels in val_loader:
-#         print(f"Validation batch - images shape: {images.shape}, labels shape: {labels.shape}")
-#         break
-#
-#     for images, labels in test_loader:
-#         print(f"Test batch - images shape: {images.shape}, labels shape: {labels.shape}")
-#         break
-
-# 仅用来测试 preprocess_and_save_dataset 函数
 if __name__ == "__main__":
     # Configuration
     IMG_DIR = "img_align_celeba"  # Image folder
@@ -175,4 +162,5 @@ if __name__ == "__main__":
             print(f"Pixel range: min={images[i].min()}, max={images[i].max()}")  # Check normalization
     else:
         print("File saving failed!")
+
 
