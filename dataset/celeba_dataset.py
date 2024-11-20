@@ -133,29 +133,6 @@ class CelebADataset(Dataset):
 
         return image, label
 
-
-def normalize_and_save_dataset(processed_file, save_path):
-    """
-    Normalize the images in a processed dataset and save the normalized dataset.
-    :param processed_file: Path to the processed dataset file
-    :param save_path: Path to save the normalized dataset
-    """
-    print(f"Loading processed dataset from {processed_file}...")
-    data = torch.load(processed_file)
-    images = data["images"]  # Shape: (N, 3, H, W)
-    labels = data["labels"]  # Shape: (N, num_attributes)
-
-    print("Normalizing images...")
-    # Normalize images to [-1, 1]
-    images = images.float() / 255.0  # Convert to float and normalize to [0, 1]
-    images = images * 2 - 1  # Normalize to [-1, 1]
-
-    # Save normalized dataset
-    print(f"Saving normalized dataset to {save_path}...")
-    torch.save({"images": images, "labels": labels}, save_path)
-    print("Normalized dataset saved!")
-
-
 if __name__ == "__main__":
     # Configuration
     IMG_DIR = "img_align_celeba"  # Image folder
