@@ -1,0 +1,33 @@
+attribute_count: 2
+attribute_list:
+- - Smiling
+  - 2
+autoencoder_loss_weight: 1
+autoencoder_optimizer: adam,lr=0.0002
+autoencoder_reload_path: null
+batch_size: 32
+debug_mode: false
+decoder_dropout_rate: 0.0
+decoder_upsample_method: convtranspose
+discriminator_lambda_schedule_steps: 500000
+discriminator_optimizer: adam,lr=0.0002
+encoder_decoder_layers: 6
+encoder_initial_filters: 32
+evaluation_classifier_path: models/default/fxkbsjtp77/best.pth
+experiment_name: default
+gradient_clip_norm: 5
+hidden_layer_dim: 512
+horizontal_flip_enabled: true
+image_channels: 3
+image_size: 256
+latent_discriminator_dropout_rate: 0.3
+latent_discriminator_loss_weight: 0.0001
+latent_discriminator_reload_path: null
+latent_discriminator_steps: 1
+maximum_feature_maps: 512
+model_output_path: /home/mla/Fader/models/default/0gil7kitln
+samples_per_epoch: 50000
+skip_connections_count: 0
+total_epochs: 1000
+use_instance_normalization: false
+vertical_flip_enabled: false
