@@ -3,7 +3,7 @@ import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from src.celeba_dataset import CelebADataset
+from dataset.celeba_dataset import CelebADataset
 from src.models import AutoEncoder, Discriminator
 import yaml
 
@@ -20,6 +20,7 @@ epochs = params["total_epochs"]  # Total number of training epochs
 lr = float(params["autoencoder_optimizer"].split(",lr=")[1])  # Learning rate for optimizers
 latent_discriminator_steps = params["latent_discriminator_steps"]  # Number of discriminator updates per AE update
 model_output_path = params["model_output_path"]  # Directory to save model checkpoints
+n_attributes = params["attribute_count"]  # Number of attributes in the dataset
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # Use GPU if available
 
 # Data preparation: load training and validation datasets
@@ -30,7 +31,6 @@ val_dataset = CelebADataset("celeba_normalized_dataset.pth", split="val")
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
 
 # Initialize the AutoEncoder and Discriminator models
-n_attributes = params["attribute_count"]  # Number of attributes in the dataset
 autoencoder = AutoEncoder(n_attributes).to(device)
 discriminator = Discriminator(n_attributes).to(device)
 
