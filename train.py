@@ -3,7 +3,7 @@ import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from dataset.celeba_dataset import CelebADataset
+from dataset.dataset_preprocess import CelebADataset
 from src.models import AutoEncoder, Discriminator
 import yaml
 
