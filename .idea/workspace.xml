@@ -5,7 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bc26b922-e47d-4dac-9305-aa4b33229ccf" name="Changes" comment="LYH">
-      <change beforePath="$PROJECT_DIR$/parametre/parameters.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/parametre/parameters.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tools.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -54,6 +54,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "Python.1.executor": "Run",
     "Python.set.executor": "Run",
     "Python.tools.executor": "Debug",
@@ -152,7 +153,7 @@
       <workItem from="1732444740221" duration="12287000" />
       <workItem from="1732615504783" duration="347000" />
       <workItem from="1732631541689" duration="700000" />
-      <workItem from="1732632286241" duration="5350000" />
+      <workItem from="1732632286241" duration="7531000" />
     </task>
     <task id="LOCAL-00001" summary="hh">
       <option name="closed" value="true" />
@@ -210,7 +211,15 @@
       <option name="project" value="LOCAL" />
       <updated>1732473740084</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="LYH">
+      <option name="closed" value="true" />
+      <created>1732640798380</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1732640798380</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

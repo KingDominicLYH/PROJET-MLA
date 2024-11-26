@@ -15,7 +15,8 @@ class CelebADataset(Dataset):
         self.images = data["images"]
 
         # Get the list of attributes to consider
-        attribute_list = [attr[0] for attr in params["attribute_list"]]
+        attribute_list = params["attribute_list"]  # 直接使用简单列表
+
         all_attr = params["ALL_ATTR"]
 
         # Filter labels to only include the specified attributes
@@ -63,6 +64,7 @@ class CelebADataset(Dataset):
 
         return image, label
 
+    @staticmethod
     def one_hot_encode(labels, num_classes=2):
         """
         Perform one-hot encoding for labels and return a 3D tensor.
@@ -72,5 +74,5 @@ class CelebADataset(Dataset):
         """
         batch_size, num_attrs = labels.size()
         one_hot_labels = torch.zeros(batch_size, num_attrs, num_classes, dtype=torch.float32)
-        one_hot_labels.scatter_(-1, labels.unsqueeze(-1), 1.0)
+        one_hot_labels.scatter_(-1, labels.long().unsqueeze(-1), 1.0)
         return one_hot_labels
