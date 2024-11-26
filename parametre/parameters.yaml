@@ -1,3 +1,44 @@
+ALL_ATTR:
+- 5_o_Clock_Shadow
+- Arched_Eyebrows
+- Attractive
+- Bags_Under_Eyes
+- Bald
+- Bangs
+- Big_Lips
+- Big_Nose
+- Black_Hair
+- Blond_Hair
+- Blurry
+- Brown_Hair
+- Bushy_Eyebrows
+- Chubby
+- Double_Chin
+- Eyeglasses
+- Goatee
+- Gray_Hair
+- Heavy_Makeup
+- High_Cheekbones
+- Male
+- Mouth_Slightly_Open
+- Mustache
+- Narrow_Eyes
+- No_Beard
+- Oval_Face
+- Pale_Skin
+- Pointy_Nose
+- Receding_Hairline
+- Rosy_Cheeks
+- Sideburns
+- Smiling
+- Straight_Hair
+- Wavy_Hair
+- Wearing_Earrings
+- Wearing_Hat
+- Wearing_Lipstick
+- Wearing_Necklace
+- Wearing_Necktie
+- Young
 attribute_count: 2
 attribute_list:
 - - Smiling
@@ -11,7 +52,7 @@ decoder_dropout_rate: 0.0
 decoder_upsample_method: convtranspose
 discriminator_lambda_schedule_steps: 500000
 discriminator_optimizer: adam,lr=0.0002
-encoder_decoder_layers: 6
+encoder_decoder_layers: 7
 encoder_initial_filters: 32
 evaluation_classifier_path: models/default/fxkbsjtp77/best.pth
 experiment_name: default
@@ -27,7 +68,5 @@ latent_discriminator_steps: 1
 maximum_feature_maps: 512
 model_output_path: /home/mla/Fader/models/default/0gil7kitln
 samples_per_epoch: 50000
-skip_connections_count: 0
 total_epochs: 1000
 use_instance_normalization: false
-vertical_flip_enabled: false

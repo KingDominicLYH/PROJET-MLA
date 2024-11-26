@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="bc26b922-e47d-4dac-9305-aa4b33229ccf" name="Changes" comment="LYH">
+      <change beforePath="$PROJECT_DIR$/parametre/parameters.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/parametre/parameters.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tools.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="492bd257f477743eae3da4040ee6abdc28937933" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;KingDominicLYH&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/KingDominicLYH/PROJET-MLA.git&quot;,
+    &quot;accountId&quot;: &quot;3bcd4c74-26d7-44dd-88be-e0243c137be5&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="2oqaF58SFPFc28ZbC4Pqe7b46OM" />
+  <component name="ProjectLevelVcsManager">
+    <OptionsSetting value="false" id="Update" />
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.1.executor": "Run",
+    "Python.set.executor": "Run",
+    "Python.tools.executor": "Debug",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "D:/Github/Fader",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.general",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="Push.Settings">
+    <option name="SHOW_DETAILS_PANEL" value="false" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\Github\PROJET-MLA" />
+      <recent name="D:\Github\PROJET-MLA\src" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="1" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="PROJET-MLA" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/1.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.1" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-e768b9ed790e-JavaScript-PY-243.21565.199" />
+        <option value="bundled-python-sdk-cab1f2013843-4ae2d6a61b08-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.21565.199" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="bc26b922-e47d-4dac-9305-aa4b33229ccf" name="Changes" comment="" />
+      <created>1731599453956</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1731599453956</updated>
+      <workItem from="1731599454659" duration="25000" />
+      <workItem from="1731622174257" duration="581000" />
+      <workItem from="1731624190574" duration="1404000" />
+      <workItem from="1731835511864" duration="1213000" />
+      <workItem from="1731868815581" duration="1927000" />
+      <workItem from="1731964902134" duration="1952000" />
+      <workItem from="1732002260273" duration="1493000" />
+      <workItem from="1732004415902" duration="108000" />
+      <workItem from="1732004530292" duration="958000" />
+      <workItem from="1732005548191" duration="114000" />
+      <workItem from="1732006341813" duration="694000" />
+      <workItem from="1732007119556" duration="825000" />
+      <workItem from="1732008170527" duration="237000" />
+      <workItem from="1732008616295" duration="1904000" />
+      <workItem from="1732020408969" duration="438000" />
+      <workItem from="1732021010172" duration="45000" />
+      <workItem from="1732021445146" duration="529000" />
+      <workItem from="1732022401474" duration="42000" />
+      <workItem from="1732023352632" duration="50000" />
+      <workItem from="1732023541613" duration="35000" />
+      <workItem from="1732023609344" duration="2671000" />
+      <workItem from="1732087750316" duration="643000" />
+      <workItem from="1732112212860" duration="2292000" />
+      <workItem from="1732125116929" duration="190000" />
+      <workItem from="1732444740221" duration="12287000" />
+      <workItem from="1732615504783" duration="347000" />
+      <workItem from="1732631541689" duration="700000" />
+      <workItem from="1732632286241" duration="5350000" />
+    </task>
+    <task id="LOCAL-00001" summary="hh">
+      <option name="closed" value="true" />
+      <created>1731622347774</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1731622347774</updated>
+    </task>
+    <task id="LOCAL-00002" summary="hh">
+      <option name="closed" value="true" />
+      <created>1731835567873</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1731835567873</updated>
+    </task>
+    <task id="LOCAL-00003" summary="LYH">
+      <option name="closed" value="true" />
+      <created>1732009071194</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1732009071194</updated>
+    </task>
+    <task id="LOCAL-00004" summary="LYH">
+      <option name="closed" value="true" />
+      <created>1732020689038</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1732020689038</updated>
+    </task>
+    <task id="LOCAL-00005" summary="LYH">
+      <option name="closed" value="true" />
+      <created>1732029578278</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1732029578278</updated>
+    </task>
+    <task id="LOCAL-00006" summary="LYH">
+      <option name="closed" value="true" />
+      <created>1732124754900</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1732124754900</updated>
+    </task>
+    <task id="LOCAL-00007" summary="LYH">
+      <option name="closed" value="true" />
+      <created>1732473740084</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1732473740084</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="hh" />
+    <MESSAGE value="LYH" />
+    <option name="LAST_COMMIT_MESSAGE" value="LYH" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/PROJET_MLA$1.coverage" NAME="1 覆盖结果" MODIFIED="1732454703232" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/PROJET_MLA$tools.coverage" NAME="tools 覆盖结果" MODIFIED="1732639991686" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/PROJET_MLA$set.coverage" NAME="set 覆盖结果" MODIFIED="1732632397420" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/parametre" />
+  </component>
+</project>
