@@ -15,6 +15,7 @@ params = {
     "batch_size": 32,                           # 每次训练的样本数
     "learning_rate": 1e-3,                           # 每次训练的样本数
     "total_epochs": 10000,                       # 总训练轮数
+    "target_attribute_list": "ALL",
 
     # "autoencoder_optimizer": "adam,lr=0.0002",  # Autoencoder的优化器配置
     # "autoencoder_reload_path": None,            # 预训练Autoencoder模型的加载路径

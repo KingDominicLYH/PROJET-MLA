@@ -17,9 +17,9 @@ class CelebADataset(Dataset):
         self.images = data["images"]
 
         # Get the list of attributes to consider
-        attribute_list = params["attribute_list"]  # 直接使用简单列表
+        attribute_list = params.target_attribute_list  # 直接使用简单列表
 
-        all_attr = params["ALL_ATTR"]
+        all_attr = params.ALL_ATTR
 
         # Filter labels to only include the specified attributes
         if attribute_list == "ALL":
