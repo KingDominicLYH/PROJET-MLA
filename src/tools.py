@@ -53,6 +53,9 @@ class CelebADataset(Dataset):
         else:
             raise ValueError("Split must be 'train', 'val', or 'test'")
 
+        # 删除原始数据，确保内存得到释放
+        del data["images"]
+
     def __len__(self):
         return len(self.images)
 
