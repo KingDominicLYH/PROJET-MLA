@@ -1,9 +1,11 @@
 import random
 import torch
 from torch.utils.data import Dataset
+from torchvision import transforms
+
 
 class CelebADataset(Dataset):
-    def __init__(self, processed_file, params, split="train", enable_flip=False, transform=None):
+    def __init__(self, processed_file, params, split="train", enable_flip=False, transform=transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])):
         """
         Initialize the dataset
         :param processed_file: Path to the saved processed dataset
