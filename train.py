@@ -2,13 +2,14 @@ import os
 import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader
+from torch.utils.data.sampler import SubsetRandomSampler
 from tqdm import tqdm
-from dataset.dataset_preprocess import CelebADataset
+from src.tools import CelebADataset
 from src.models import AutoEncoder, Discriminator
 import yaml
 
 # Load configuration parameters from the YAML file
-with open("parameters.yaml", "r") as f:
+with open("parametre/parameters.yaml", "r") as f:
     params = yaml.safe_load(f)
 
 # Hyperparameter setup
@@ -21,14 +22,38 @@ lr = float(params["autoencoder_optimizer"].split(",lr=")[1])  # Learning rate fo
 latent_discriminator_steps = params["latent_discriminator_steps"]  # Number of discriminator updates per AE update
 model_output_path = params["model_output_path"]  # Directory to save model checkpoints
 n_attributes = params["attribute_count"]  # Number of attributes in the dataset
+subset_train_size = params["samples_train_per_epoch"]  # Number of samples per epoch
+subset_val_size = params["samples_val_per_epoch"]  # Number of validation samples
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # Use GPU if available
 
-# Data preparation: load training and validation datasets
-train_dataset = CelebADataset("celeba_normalized_dataset.pth", split="train")
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+# 每轮训练动态采样
+def get_random_subset_loader(dataset, batch_size, subset_size):
+    """
+    Creates a DataLoader with a random subset of the dataset.
+    """
+    # 随机生成子集索引
+    indices = torch.randperm(len(dataset))[:subset_size]
+    sampler = SubsetRandomSampler(indices)
 
-val_dataset = CelebADataset("celeba_normalized_dataset.pth", split="val")
-val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
+    # 创建 DataLoader
+    loader = DataLoader(dataset, batch_size=batch_size, sampler=sampler, num_workers=4)
+    return loader
+
+# Data preparation: load training and validation datasets
+train_dataset = CelebADataset(
+    "celeba_normalized_dataset.pth",
+    split="train",
+    enable_flip=True,
+    params=params
+)
+
+val_dataset = CelebADataset(
+    "celeba_normalized_dataset.pth",
+    split="val",
+    enable_flip=False,
+    params=params
+)
+val_loader = get_random_subset_loader(val_dataset, batch_size, subset_val_size)
 
 # Initialize the AutoEncoder and Discriminator models
 autoencoder = AutoEncoder(n_attributes).to(device)
@@ -128,6 +153,8 @@ def main():
 
     for epoch in range(1, epochs + 1):
         # Train for one epoch
+        train_loader = get_random_subset_loader(train_dataset, batch_size, subset_train_size)
+
         train_one_epoch(epoch, train_loader, autoencoder, discriminator, autoencoder_optimizer, discriminator_optimizer)
 
         # Validate the AutoEncoder

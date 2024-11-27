@@ -165,13 +165,12 @@ class Discriminator(nn.Module):
             nn.Conv2d(512, 512, kernel_size=4, stride=2, padding=1),  # C_512
             nn.BatchNorm2d(512),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Dropout(0.3),  # Dropout applied with a rate of 0.3
 
             # Flatten layer
             nn.Flatten(),  # Automatically flatten to [batch_size, 512 * 2 * 2]
 
             # Fully connected layers
-            nn.Linear(2048, 512),  # First fully connected layer
+            nn.Linear(512, 512),  # First fully connected layer
             nn.LeakyReLU(0.2, inplace=True),
             nn.Dropout(0.3),  # Dropout applied with a rate of 0.3
             nn.Linear(512, n_attributes),  # Second fully connected layer
@@ -192,4 +191,62 @@ class Discriminator(nn.Module):
         x = self.model(x)
         return x
 
+class Classifier(nn.Module):
+    def __init__(self):
+        super(Classifier, self).__init__()
+
+        # 卷积层部分 (C16到C512, 七层卷积)
+        self.conv_layers = nn.Sequential(
+            nn.Conv2d(3, 16, kernel_size=4, stride=2, padding=1),  # C16
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+
+            nn.Conv2d(16, 32, kernel_size=4, stride=2, padding=1),  # C32
+            nn.BatchNorm2d(32),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+
+            nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1),  # C64
+            nn.BatchNorm2d(64),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+
+            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),  # C128
+            nn.BatchNorm2d(128),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+
+            nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),  # C256
+            nn.BatchNorm2d(256),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+
+            nn.Conv2d(256, 512, kernel_size=4, stride=2, padding=1),  # C512
+            nn.BatchNorm2d(512),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+
+            # 额外一层卷积
+            nn.Conv2d(512, 512, kernel_size=4, stride=2, padding=1),  # C512
+            nn.BatchNorm2d(512),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+
+            # 额外一层卷积
+            nn.Conv2d(512, 512, kernel_size=4, stride=2, padding=1),  # C512
+            nn.BatchNorm2d(512),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+
+        )
+
+        # Flatten layer
+        self.flatten = nn.Flatten()  # Automatically flatten to [batch_size, 512 * 1 * 1]
+
+        # 全连接层部分
+        self.fc_layers = nn.Sequential(
+            nn.Linear(512 * 1 * 1, 512),  # 扁平化后连接到512维
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Dropout(0.3),  # Dropout applied with a rate of 0.3
+            nn.Linear(512, n_attributes),  # 输出2类，假设是二分类问题
+            nn.Sigmoid()  # Normalize outputs to [0, 1]
+        )
+
+    def forward(self, x):
+        x = self.conv_layers(x)  # 通过卷积层
+        x = self.flatten(x)
+        x = self.fc_layers(x)  # 通过全连接层
+        return x
 

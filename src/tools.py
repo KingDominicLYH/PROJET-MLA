@@ -1,12 +1,14 @@
+import random
 import torch
 from torch.utils.data import Dataset
 
 class CelebADataset(Dataset):
-    def __init__(self, processed_file, split="train", transform=None, params=None):
+    def __init__(self, processed_file, params, split="train", enable_flip=False, transform=None):
         """
         Initialize the dataset
         :param processed_file: Path to the saved processed dataset
         :param split: Which split to load ("train", "val", "test")
+        :param enable_flip: Boolean, whether to enable random horizontal flipping
         :param transform: Optional image transformations
         :param params: Parameters dictionary passed from the main program
         """
@@ -20,15 +22,19 @@ class CelebADataset(Dataset):
         all_attr = params["ALL_ATTR"]
 
         # Filter labels to only include the specified attributes
-        if all_attr and attribute_list:
-            attr_indices = [all_attr.index(attr) for attr in attribute_list]
-            self.labels = data["labels"][:, attr_indices]
+        if attribute_list == "ALL":
+            self.labels = data["labels"]
         else:
-            raise ValueError("Attribute list or ALL_ATTR is missing in params")
+            if all_attr and attribute_list:
+                attr_indices = [all_attr.index(attr) for attr in attribute_list]
+                self.labels = data["labels"][:, attr_indices]
+            else:
+                raise ValueError("Attribute list or ALL_ATTR is missing in params")
 
         self.labels = self.one_hot_encode(labels=self.labels)
 
         self.transform = transform
+        self.enable_flip = enable_flip  # 新增的参数，用于控制水平翻转是否启用
 
         # Split dataset dynamically
         total_samples = len(self.images)
@@ -53,11 +59,14 @@ class CelebADataset(Dataset):
     def __getitem__(self, idx):
         """
         Retrieve an image and its label by index
-        :param idx: Index
+        :param idx:
         :return: Image tensor and label
         """
         image = self.images[idx]
         label = self.labels[idx]
+
+        if self.enable_flip and random.random() < 0.5:  # 50% 概率翻转
+            image = torch.flip(image, dims=[2])  # 水平翻转
 
         if self.transform:
             image = self.transform(image)
@@ -76,3 +85,8 @@ class CelebADataset(Dataset):
         one_hot_labels = torch.zeros(batch_size, num_attrs, num_classes, dtype=torch.float32)
         one_hot_labels.scatter_(-1, labels.long().unsqueeze(-1), 1.0)
         return one_hot_labels
+
+class Config:
+    def __init__(self, config_dict):
+        for key, value in config_dict.items():
+            setattr(self, key, value)
