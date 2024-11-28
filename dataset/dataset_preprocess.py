@@ -6,6 +6,8 @@ from tqdm import tqdm
 
 from src.tools import Config
 
+import sys
+sys.path.append('PROJET-MLA/src')
 
 def preprocess_and_save_dataset(img_dir, attr_file, save_dir, img_size):
     """
