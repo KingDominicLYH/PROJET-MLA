@@ -18,9 +18,9 @@ params = Config(params_dict)
 # n_attributes = 40
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# 数据加载
-train_dataset = CelebADataset(params.processed_file, split="train", transform=None, params=params)
-valid_dataset = CelebADataset(params.processed_file, split="val", transform=None, params=params)
+# 数据加载部分
+train_dataset = CelebADataset(data_dir=params.processed_file, params=params, split="train")
+valid_dataset = CelebADataset(data_dir=params.processed_file, params=params, split="val")
 
 train_loader = DataLoader(train_dataset, batch_size=params.batch_size, shuffle=True)
 valid_loader = DataLoader(valid_dataset, batch_size=params.batch_size, shuffle=False)

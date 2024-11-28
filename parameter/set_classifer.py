@@ -11,7 +11,7 @@ params = {
         "Wavy_Hair", "Wearing_Earrings", "Wearing_Hat", "Wearing_Lipstick",
         "Wearing_Necklace", "Wearing_Necktie", "Young"
     ],
-    "processed_file": "dataset/celeba_dataset.pth",  # Autoencoder的优化器配置
+    "processed_file": "dataset",  # Autoencoder的优化器配置
     "batch_size": 32,                           # 每次训练的样本数
     "learning_rate": 1e-3,                           # 每次训练的样本数
     "total_epochs": 10000,                       # 总训练轮数
