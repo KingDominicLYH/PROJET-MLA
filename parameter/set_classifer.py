@@ -18,6 +18,7 @@ params = {
     "target_attribute_list": "ALL",
     "n_attributes": 40,
 
+
     # "autoencoder_optimizer": "adam,lr=0.0002",  # Autoencoder的优化器配置
     # "autoencoder_reload_path": None,            # 预训练Autoencoder模型的加载路径
     # "attribute_list": [["Smiling", 2]],         # 需要操作的属性列表及类别数量
