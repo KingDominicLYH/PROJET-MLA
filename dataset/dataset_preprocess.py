@@ -1,5 +1,6 @@
 import os
 import cv2
+import numpy as np
 import torch
 import yaml
 from tqdm import tqdm
@@ -94,8 +95,12 @@ def process_and_save_images(img_dir, image_ids, labels, save_dir, data_type, img
         images.append(image)
 
     # Save the processed images and labels as a .pth file
+    # Convert to PyTorch tensors
+    print("Converting data to tensors...")
+    all_tensor_imgs = np.concatenate([img.transpose((2, 0, 1))[None] for img in images], 0)
+    all_tensor_imgs = torch.from_numpy(all_tensor_imgs)
     save_path = os.path.join(save_dir, f"{data_type}_dataset.pth")
-    data = {"images": images, "labels": labels}
+    data = {"images": all_tensor_imgs, "labels": labels}
     torch.save(data, save_path)
     print(f"{data_type} dataset saved at {save_path}")
 
