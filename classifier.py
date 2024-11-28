@@ -26,7 +26,7 @@ train_loader = DataLoader(train_dataset, batch_size=params.batch_size, shuffle=T
 valid_loader = DataLoader(valid_dataset, batch_size=params.batch_size, shuffle=False)
 
 # 模型、损失函数和优化器
-model = Classifier().to(device)
+model = Classifier(params).to(device)
 criterion = nn.BCELoss()  # 适用于多标签分类问题
 optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 

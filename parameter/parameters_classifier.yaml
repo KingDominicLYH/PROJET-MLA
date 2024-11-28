@@ -40,8 +40,9 @@ ALL_ATTR:
 - Wearing_Necktie
 - Young
 batch_size: 32
-data_dir: dataset
 image_size: 256
 learning_rate: 0.001
+n_attributes: 40
+processed_file: dataset
 target_attribute_list: ALL
 total_epochs: 10000
