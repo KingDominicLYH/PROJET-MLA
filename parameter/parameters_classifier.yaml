@@ -40,6 +40,8 @@ ALL_ATTR:
 - Wearing_Necktie
 - Young
 batch_size: 32
+image_size: 256
 learning_rate: 0.001
 processed_file: dataset/celeba_dataset.pth
+target_attribute_list: ALL
 total_epochs: 10000

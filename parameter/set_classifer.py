@@ -32,7 +32,7 @@ params = {
     # "horizontal_flip_enabled": True,            # 是否启用水平翻转数据增强
     # "hidden_layer_dim": 512,                    # 隐藏层的维度大小
     # "image_channels": 3,                        # 图像的通道数（1: 灰度, 3: RGB）
-    # "image_size": 256,                          # 图像的宽度和高度（正方形）
+    "image_size": 256,                          # 图像的宽度和高度（正方形）
     # "encoder_initial_filters": 32,              # 编码器的初始卷积核数量
     # "use_instance_normalization": False,        # 是否使用Instance Normalization
     # "autoencoder_loss_weight": 1,               # 自编码器损失的权重
