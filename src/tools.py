@@ -1,3 +1,4 @@
+import os
 import random
 import torch
 from torch.utils.data import Dataset
@@ -5,7 +6,7 @@ from torchvision import transforms
 
 
 class CelebADataset(Dataset):
-    def __init__(self, processed_file, params, split="train", enable_flip=False, transform=transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])):
+    def __init__(self, data_dir, params, split="train", enable_flip=False, transform=transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])):
         """
         Initialize the dataset
         :param processed_file: Path to the saved processed dataset
@@ -14,7 +15,10 @@ class CelebADataset(Dataset):
         :param transform: Optional image transformations
         :param params: Parameters dictionary passed from the main program
         """
+        # 根据 split 动态选择处理后的文件
+        processed_file = self._get_processed_file(data_dir, split)
         print(f"Loading processed dataset from {processed_file}...")
+
         data = torch.load(processed_file)
         self.images = data["images"]
 
@@ -38,25 +42,22 @@ class CelebADataset(Dataset):
         self.transform = transform
         self.enable_flip = enable_flip  # 新增的参数，用于控制水平翻转是否启用
 
-        # Split dataset dynamically
-        total_samples = len(self.images)
-        train_end = int(0.85 * total_samples)  # 85% for training
-        val_end = int(0.95 * total_samples)  # 10% for validation, 5% for testing
+    def _get_processed_file(self, base_dir, split):
+        """
+        根据 split 返回对应的处理文件路径
+        :param base_dir: 存储处理后数据的基本路径
+        :param split: 数据集分割（train, val, test）
+        :return: 对应的文件路径
+        """
+        file_map = {
+            "train": "train_dataset.pth",
+            "val": "val_dataset.pth",
+            "test": "test_dataset.pth"
+        }
+        if split not in file_map:
+            raise ValueError("Invalid split. Expected one of ['train', 'val', 'test'].")
 
-        if split == "train":
-            self.images = self.images[:train_end]
-            self.labels = self.labels[:train_end]
-        elif split == "val":
-            self.images = self.images[train_end:val_end]
-            self.labels = self.labels[train_end:val_end]
-        elif split == "test":
-            self.images = self.images[val_end:]
-            self.labels = self.labels[val_end:]
-        else:
-            raise ValueError("Split must be 'train', 'val', or 'test'")
-
-        # 删除原始数据，确保内存得到释放
-        del data["images"]
+        return os.path.join(base_dir, file_map[split])
 
     def __len__(self):
         return len(self.images)
