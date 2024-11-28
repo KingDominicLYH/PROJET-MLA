@@ -71,6 +71,9 @@ class CelebADataset(Dataset):
         image = self.images[idx]
         label = self.labels[idx]
 
+        # Ensure the image is in float type and normalized to [0, 1]
+        image = image / 255  # Normalize to [0, 1]
+
         if self.enable_flip and random.random() < 0.5:  # 50% 概率翻转
             image = torch.flip(image, dims=[2])  # 水平翻转
 
