@@ -9,7 +9,7 @@ from src.models import AutoEncoder, Discriminator
 import yaml
 
 # Load configuration parameters from the YAML file
-with open("parametre/parameters.yaml", "r") as f:
+with open("parameter/parameters.yaml", "r") as f:
     params = yaml.safe_load(f)
 
 # Hyperparameter setup

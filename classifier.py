@@ -8,7 +8,7 @@ from src.models import Classifier
 from src.tools import CelebADataset, Config
 
 # 加载YAML配置
-with open("parametre/parameters_classifier.yaml", "r") as f:
+with open("parameter/parameters_classifier.yaml", "r") as f:
     params_dict = yaml.safe_load(f)
 
 # 将YAML配置字典转换为Config对象

@@ -1,7 +1,11 @@
 import os
 import cv2
 import torch
+import yaml
 from tqdm import tqdm
+
+from src.tools import Config
+
 
 def preprocess_and_save_dataset(img_dir, attr_file, save_dir, img_size):
     """
@@ -93,6 +97,20 @@ def process_and_save_images(img_dir, image_ids, labels, save_dir, data_type, img
     torch.save(data, save_path)
     print(f"{data_type} dataset saved at {save_path}")
 
+# 加载YAML配置
+with open("parameter/parameters.yaml", "r") as f:
+    params_dict = yaml.safe_load(f)
+
+# 将YAML配置字典转换为Config对象
+params = Config(params_dict)
+
+img_directory = params.raw_img_directory          # 图像文件夹路径
+attributes_file = params.raw_attributes_file  # 属性文件路径
+save_directory = params.preprocess_save_directory           # 处理后数据保存路径
+image_size = params.image_size                          # 图像调整大小，默认为256
+
+# 调用处理函数
+preprocess_and_save_dataset(img_directory, attributes_file, save_directory, image_size)
 
 
 

@@ -1,9 +1,10 @@
 import yaml
 
 params = {
-
-
-
+    "raw_img_directory": "dataset/img_align_celeba",  # Autoencoder的优化器配置
+    "raw_attributes_file": "dataset/list_attr_celeba.txt",
+    "preprocess_save_directory": "dataset",
+    "image_size": 256,
 
 
 
