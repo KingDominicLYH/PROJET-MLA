@@ -3,6 +3,8 @@ import torch.nn as nn
 import yaml
 from torch.utils.data import DataLoader
 from torch import optim
+from torch.utils.tensorboard import SummaryWriter
+from datetime import datetime  # 导入datetime模块
 
 from src.models import Classifier
 from src.tools import CelebADataset, Config
@@ -29,6 +31,11 @@ valid_loader = DataLoader(valid_dataset, batch_size=params.batch_size, shuffle=F
 model = Classifier(params).to(device)
 criterion = nn.BCELoss()  # 适用于多标签分类问题
 optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
+
+# 获取当前时间戳并格式化为文件夹名称
+current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+log_dir = f'Tensorboard/{current_time}' # 动态生成TensorBoard日志目录
+writer = SummaryWriter(log_dir=log_dir) # 初始化TensorBoard的SummaryWriter
 
 # 训练过程
 def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, device):
