@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 from torch import optim
 from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime  # 导入datetime模块
+from tqdm import tqdm  # 导入进度条库
 
 from src.models import Classifier
 from src.tools import CelebADataset, Config
@@ -43,13 +44,17 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
     best_valid_loss = float('inf')
 
     for epoch in range(n_epochs):
+        print(f'Starting Epoch {epoch + 1}/{n_epochs}')
         model.train()  # 设置为训练模式
         train_loss = 0.0
         correct_predictions = 0
         total_predictions = 0
 
+        # 创建进度条
+        train_loader_tqdm = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{n_epochs}", dynamic_ncols=True)
+
         # 训练
-        for inputs, labels in train_loader:
+        for inputs, labels in train_loader_tqdm:
             inputs, labels = inputs.to(device), labels.to(device)
 
             optimizer.zero_grad()  # 梯度清零
@@ -62,6 +67,9 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
             preds = outputs > 0.5  # 二分类的阈值0.5
             correct_predictions += (preds == labels).sum().item()  # 计算正确预测
             total_predictions += labels.size(0) * labels.size(1)  # 总样本数
+
+            # 更新进度条
+            train_loader_tqdm.set_postfix({'Loss': f'{loss.item():.4f}'})
 
         train_loss /= len(train_loader.dataset)
         accuracy = correct_predictions / total_predictions
@@ -92,6 +100,11 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
         print(f'Epoch {epoch + 1}/{n_epochs}')
         print(f'Train Loss: {train_loss:.4f}, Train Accuracy: {accuracy:.4f}')
         print(f'Valid Loss: {valid_loss:.4f}, Valid Accuracy: {valid_accuracy:.4f}')
+
+        writer.add_scalar('Train Loss', train_loss, epoch)
+        writer.add_scalar('Train Accuracy', accuracy, epoch)
+        writer.add_scalar('Valid Loss', valid_loss, epoch)
+        writer.add_scalar('Valid Accuracy', valid_accuracy, epoch)
 
         # 保存最好的模型
         if valid_loss < best_valid_loss:
