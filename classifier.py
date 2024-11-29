@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import yaml
+from torch.cuda.amp import GradScaler, autocast
 from torch.utils.data import DataLoader
 from torch import optim
 from torch.utils.tensorboard import SummaryWriter
@@ -25,8 +26,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 train_dataset = CelebADataset(data_dir=params.processed_file, params=params, split="train")
 valid_dataset = CelebADataset(data_dir=params.processed_file, params=params, split="val")
 
-train_loader = DataLoader(train_dataset, batch_size=params.batch_size, shuffle=True)
-valid_loader = DataLoader(valid_dataset, batch_size=params.batch_size, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=params.batch_size, shuffle=True, num_workers=10, pin_memory=True)
+valid_loader = DataLoader(valid_dataset, batch_size=params.batch_size, shuffle=False, num_workers=10, pin_memory=True)
 
 # 模型、损失函数和优化器
 model = Classifier(params).to(device)
@@ -43,6 +44,9 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
     # 用于保存最好的模型
     best_valid_loss = float('inf')
 
+    # 初始化梯度缩放器
+    scaler = GradScaler()
+
     for epoch in range(n_epochs):
         print(f'Starting Epoch {epoch + 1}/{n_epochs}')
         model.train()  # 设置为训练模式
@@ -58,10 +62,18 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
             inputs, labels = inputs.to(device), labels.to(device)
 
             optimizer.zero_grad()  # 梯度清零
-            outputs = model(inputs)  # 前向传播
-            loss = criterion(outputs, labels)  # 计算损失
-            loss.backward()  # 反向传播
-            optimizer.step()  # 更新参数
+
+            # 使用 autocast 来启用自动混合精度
+            with autocast():  # 前向传播使用混合精度
+                outputs = model(inputs)
+                loss = criterion(outputs, labels)
+
+            # 反向传播
+            scaler.scale(loss).backward()  # 使用 scaler 来反向传播
+
+            # 更新参数
+            scaler.step(optimizer)  # 使用 scaler 来更新优化器
+            scaler.update()  # 更新 scaler
 
             train_loss += loss.item() * inputs.size(0)  # 累加损失
             preds = outputs > 0.5  # 二分类的阈值0.5
