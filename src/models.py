@@ -240,7 +240,7 @@ class Classifier(nn.Module):
             nn.Linear(512 * 1 * 1, 512),  # 扁平化后连接到512维
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.Dropout(0.3),  # Dropout applied with a rate of 0.3
-            nn.Linear(512, params.n_attributes),  # 输出2类，假设是二分类问题
+            nn.Linear(512, params.n_attributes * 2),  # 输出2类，假设是二分类问题
             nn.Sigmoid()  # Normalize outputs to [0, 1]
         )
 
@@ -248,5 +248,5 @@ class Classifier(nn.Module):
         x = self.conv_layers(x)  # 通过卷积层
         x = self.flatten(x)
         x = self.fc_layers(x)  # 通过全连接层
-        return x
+        return x.view(x.size(0), -1, 2)
 
