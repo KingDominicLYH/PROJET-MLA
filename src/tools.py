@@ -6,7 +6,7 @@ from torchvision import transforms
 
 
 class CelebADataset(Dataset):
-    def __init__(self, data_dir, params, split="train", enable_flip=False, transform=transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])):
+    def __init__(self, data_dir, params, split="train", enable_flip=False, transform=None):
         """
         Initialize the dataset
         :param processed_file: Path to the saved processed dataset
@@ -72,7 +72,7 @@ class CelebADataset(Dataset):
         label = self.labels[idx]
 
         # Ensure the image is in float type and normalized to [0, 1]
-        image = image / 255  # Normalize to [0, 1]
+        image = normalize_images(image)  # Normalize to [0, 1]
 
         if self.enable_flip and random.random() < 0.5:  # 50% 概率翻转
             image = torch.flip(image, dims=[2])  # 水平翻转
@@ -99,3 +99,9 @@ class Config:
     def __init__(self, config_dict):
         for key, value in config_dict.items():
             setattr(self, key, value)
+
+def normalize_images(images):
+    """
+    Normalize image values using in-place operations in a chained manner.
+    """
+    return images.float().div(255.0).mul(2.0).add(-1)
