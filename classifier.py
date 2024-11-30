@@ -30,7 +30,7 @@ valid_loader = DataLoader(valid_dataset, batch_size=params.batch_size, shuffle=F
 
 # 模型、损失函数和优化器
 model = Classifier(params).to(device)
-criterion = nn.BCEWithLogitsLoss()
+criterion = nn.BCELoss()
 optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 
 # 获取当前时间戳并格式化为文件夹名称
