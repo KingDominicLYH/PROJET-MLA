@@ -45,6 +45,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
 
     # 计算每个 epoch 中的迭代次数
     num_iterations = params.total_train_samples // params.batch_size
+    num_valid_iterations = params.total_valid_samples // params.batch_size
 
     for epoch in range(n_epochs):
         print(f'Starting Epoch {epoch + 1}/{n_epochs}')
@@ -91,8 +92,11 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
         correct_predictions = 0
         total_predictions = 0
 
+        # 创建验证进度条
+        valid_loader_tqdm = tqdm(valid_loader, desc=f"Validating Epoch {epoch + 1}/{n_epochs}", dynamic_ncols=True)
+
         with torch.no_grad():  # 不计算梯度
-            for inputs, labels in valid_loader:
+            for inputs, labels in valid_loader_tqdm:
                 inputs, labels = inputs.to(device), labels.to(device)
                 outputs = model(inputs)
 

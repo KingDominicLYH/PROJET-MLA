@@ -47,3 +47,4 @@ processed_file: dataset
 target_attribute_list: ALL
 total_epochs: 10000
 total_train_samples: 50000
+total_valid_samples: 10000
