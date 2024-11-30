@@ -46,7 +46,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
     for epoch in range(n_epochs):
         print(f'Starting Epoch {epoch + 1}/{n_epochs}')
         model.train()  # 设置为训练模式
-        train_loss = 0.0
+        train_loss = []
         correct_predictions = 0
         total_predictions = 0
 
@@ -66,18 +66,18 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
             # 更新参数
             optimizer.step()
 
-            train_loss += loss.item() * inputs.size(0)  # 累加损失
-            preds = outputs > 0.5  # 二分类的阈值0.5
+            # # train_loss.append(loss.item())  # 累加损失
+            # preds = outputs > 0.5  # 二分类的阈值0.5
 
             # 计算准确度
-            correct_predictions += (preds == labels).sum().item()
-            total_predictions += labels.numel()
+            # correct_predictions += (preds == labels).sum().item()
+            # total_predictions += labels.numel()
 
             # 更新进度条
             train_loader_tqdm.set_postfix({'Loss': f'{loss.item():.4f}'})
 
-        train_loss /= len(train_loader.dataset)
-        accuracy = correct_predictions / total_predictions
+        # train_loss /= len(train_loader.dataset)
+        # accuracy = correct_predictions / total_predictions
 
         # 验证
         model.eval()  # 设置为评估模式
