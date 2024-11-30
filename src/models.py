@@ -229,7 +229,6 @@ class Classifier(nn.Module):
             nn.Conv2d(512, 512, kernel_size=4, stride=2, padding=1),  # C512
             nn.BatchNorm2d(512),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.Sigmoid()  # Normalize outputs to [0, 1]
         )
 
         # Flatten layer
@@ -241,6 +240,7 @@ class Classifier(nn.Module):
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.Dropout(0.3),  # Dropout applied with a rate of 0.3
             nn.Linear(512, params.n_attributes * 2),  # 输出2类，假设是二分类问题
+            nn.Sigmoid()  # Normalize outputs to [0, 1]
         )
 
     def forward(self, x):
