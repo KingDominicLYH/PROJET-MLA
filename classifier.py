@@ -26,8 +26,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 train_dataset = CelebADataset(data_dir=params.processed_file, params=params, split="train")
 valid_dataset = CelebADataset(data_dir=params.processed_file, params=params, split="val")
 
-train_loader = DataLoader(train_dataset, batch_size=params.batch_size, shuffle=True, num_workers=10, pin_memory=True)
-valid_loader = DataLoader(valid_dataset, batch_size=params.batch_size, shuffle=False, num_workers=10, pin_memory=True)
+train_loader = DataLoader(train_dataset, batch_size=params.batch_size, shuffle=True, pin_memory=True)
+valid_loader = DataLoader(valid_dataset, batch_size=params.batch_size, shuffle=False, pin_memory=True)
 
 # 模型、损失函数和优化器
 model = Classifier(params).to(device)
