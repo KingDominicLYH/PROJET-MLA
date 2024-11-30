@@ -14,7 +14,7 @@ params = {
     "processed_file": "dataset",  # Autoencoder的优化器配置
     "batch_size": 32,                           # 每次训练的样本数
     "learning_rate": 1e-3,                           # 每次训练的样本数
-    "total_epochs": 10000,                       # 总训练轮数
+    "total_epochs": 1000,                       # 总训练轮数
     "target_attribute_list": "ALL",
     "n_attributes": 40,
     "total_train_samples": 50000,
