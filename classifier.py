@@ -54,7 +54,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
         total_predictions = 0
 
         # 创建进度条
-        train_loader_tqdm = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{n_epochs}", dynamic_ncols=True)
+        train_loader_tqdm = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{n_epochs}", dynamic_ncols=True, total=num_iterations)
 
         # 训练一个 epoch 时，只迭代 num_iterations 次
         for i, (inputs, labels) in enumerate(train_loader_tqdm):
