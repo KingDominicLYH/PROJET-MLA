@@ -47,9 +47,6 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
     num_iterations = params.total_train_samples // params.batch_size
     num_valid_iterations = params.total_valid_samples // params.batch_size
 
-    # 创建总进度条，total 为 n_epochs，desc 为描述
-    total_loader_tqdm = tqdm(range(n_epochs), desc="Total Progress", dynamic_ncols=True, position=0, leave=True)
-
     for epoch in range(n_epochs):
         print(f'Starting Epoch {epoch + 1}/{n_epochs}')
         model.train()  # 设置为训练模式
@@ -96,7 +93,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
         total_predictions = 0
 
         # 创建验证进度条
-        valid_loader_tqdm = tqdm(valid_loader, desc=f"Validating Epoch {epoch + 1}/{n_epochs}", dynamic_ncols=True)
+        valid_loader_tqdm = tqdm(valid_loader, desc=f"Validating Epoch {epoch + 1}/{n_epochs}", dynamic_ncols=True, total=num_valid_iterations)
 
         with torch.no_grad():  # 不计算梯度
             for i, (inputs, labels) in enumerate(valid_loader_tqdm):
@@ -135,8 +132,6 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
             torch.save(model.state_dict(), 'best_model.pth')
             print('Model saved!')
 
-        # 更新总进度条
-        total_loader_tqdm.update(1)
 
 # 运行训练
 train(model, train_loader, valid_loader, criterion, optimizer, params.total_epochs, device)
