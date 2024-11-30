@@ -68,12 +68,10 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
 
             train_loss += loss.item() * inputs.size(0)  # 累加损失
             preds = outputs > 0.5  # 二分类的阈值0.5
-            for i in range(labels.size(0)):
-                for j in range(labels.size(1)):
-                    # 比较 preds[i, j] 和 labels[i, j]，逐元素比较
-                    if torch.equal(preds[i, j], labels[i, j]):
-                        correct_predictions += 1
-                    total_predictions += 1
+
+            # 计算准确度
+            correct_predictions += (preds == labels).sum().item()
+            total_predictions += labels.numel()
 
             # 更新进度条
             train_loader_tqdm.set_postfix({'Loss': f'{loss.item():.4f}'})
@@ -97,13 +95,10 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
                 valid_loss += loss.item() * inputs.size(0)
 
                 preds = outputs > 0.5
-                # 遍历 batch 的每个样本
-                for i in range(labels.size(0)):
-                    for j in range(labels.size(1)):
-                        # 比较 preds[i, j] 和 labels[i, j]，逐元素比较
-                        if torch.equal(preds[i, j], labels[i, j]):
-                            correct_predictions += 1
-                        total_predictions += 1
+
+                # 计算准确度
+                correct_predictions += (preds == labels).sum().item()
+                total_predictions += labels.numel()
 
         valid_loss /= len(valid_loader.dataset)
         valid_accuracy = correct_predictions / total_predictions

@@ -37,8 +37,6 @@ class CelebADataset(Dataset):
             else:
                 raise ValueError("Attribute list or ALL_ATTR is missing in params")
 
-        self.labels = self.one_hot_encode(labels=self.labels)
-
         self.transform = transform
         self.enable_flip = enable_flip  # 新增的参数，用于控制水平翻转是否启用
 
