@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import yaml
-from torch.cuda.amp import GradScaler, autocast
 from torch.utils.data import DataLoader
 from torch import optim
 from torch.utils.tensorboard import SummaryWriter
@@ -44,9 +43,6 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
     # 用于保存最好的模型
     best_valid_loss = float('inf')
 
-    # 初始化梯度缩放器
-    scaler = GradScaler()
-
     for epoch in range(n_epochs):
         print(f'Starting Epoch {epoch + 1}/{n_epochs}')
         model.train()  # 设置为训练模式
@@ -63,17 +59,12 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
 
             optimizer.zero_grad()  # 梯度清零
 
-            # 使用 autocast 来启用自动混合精度
-            with autocast():  # 前向传播使用混合精度
-                outputs = model(inputs)
-                loss = criterion(outputs, labels)
-
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
             # 反向传播
-            scaler.scale(loss).backward()  # 使用 scaler 来反向传播
-
+            loss.backward()
             # 更新参数
-            scaler.step(optimizer)  # 使用 scaler 来更新优化器
-            scaler.update()  # 更新 scaler
+            optimizer.step()
 
             train_loss += loss.item() * inputs.size(0)  # 累加损失
             preds = outputs > 0.5  # 二分类的阈值0.5
