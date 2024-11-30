@@ -43,18 +43,24 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
     # 用于保存最好的模型
     best_valid_loss = float('inf')
 
+    # 计算每个 epoch 中的迭代次数
+    num_iterations = params.total_train_samples // params.batch_size
+
     for epoch in range(n_epochs):
         print(f'Starting Epoch {epoch + 1}/{n_epochs}')
         model.train()  # 设置为训练模式
-        train_loss = []
+        train_loss = 0
         correct_predictions = 0
         total_predictions = 0
 
         # 创建进度条
         train_loader_tqdm = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{n_epochs}", dynamic_ncols=True)
 
-        # 训练
-        for inputs, labels in train_loader_tqdm:
+        # 训练一个 epoch 时，只迭代 num_iterations 次
+        for i, (inputs, labels) in enumerate(train_loader_tqdm):
+            if i >= num_iterations:
+                break  # 超过50000个样本后，终止训练
+
             inputs, labels = inputs.to(device), labels.to(device)
 
             optimizer.zero_grad()  # 梯度清零
@@ -66,18 +72,18 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
             # 更新参数
             optimizer.step()
 
-            # # train_loss.append(loss.item())  # 累加损失
-            # preds = outputs > 0.5  # 二分类的阈值0.5
+            train_loss += loss.item() * inputs.size(0)  # 累加损失
+            preds = outputs > 0.5  # 二分类的阈值0.5
 
             # 计算准确度
-            # correct_predictions += (preds == labels).sum().item()
-            # total_predictions += labels.numel()
+            correct_predictions += (preds == labels).sum().item()
+            total_predictions += labels.numel()
 
             # 更新进度条
             train_loader_tqdm.set_postfix({'Loss': f'{loss.item():.4f}'})
 
-        # train_loss /= len(train_loader.dataset)
-        # accuracy = correct_predictions / total_predictions
+        train_loss /= len(train_loader.dataset)
+        accuracy = correct_predictions / total_predictions
 
         # 验证
         model.eval()  # 设置为评估模式

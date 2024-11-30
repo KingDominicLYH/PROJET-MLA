@@ -17,6 +17,7 @@ params = {
     "total_epochs": 10000,                       # 总训练轮数
     "target_attribute_list": "ALL",
     "n_attributes": 40,
+    "total_train_samples": 50000,
 
 
     # "autoencoder_optimizer": "adam,lr=0.0002",  # Autoencoder的优化器配置
