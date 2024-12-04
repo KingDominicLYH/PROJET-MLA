@@ -27,7 +27,7 @@ params = {
     # "batch_size": 32,                           # 每次训练的样本数
     # "gradient_clip_norm": 5,                    # 梯度裁剪的最大范数
     # "debug_mode": False,                        # 是否启用调试模式
-    # "decoder_dropout_rate": 0.0,                # 解码器中的Dropout概率
+    # "decoder_dropout_rate": 0.3,                # 解码器中的Dropout概率
     # "decoder_upsample_method": "convtranspose", # 解码器的上采样方式
     # "discriminator_optimizer": "adam,lr=0.0002",# 判别器的优化器配置
     # "model_output_path": "/home/mla/Fader/models/default/0gil7kitln", # 模型输出路径
