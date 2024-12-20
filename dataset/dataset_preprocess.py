@@ -34,7 +34,12 @@ def preprocess_and_save_dataset(img_dir, attr_file, save_dir, img_size):
 
     # Convert labels to tensor
     labels = torch.tensor(labels, dtype=torch.float32)
-    labels = (labels + 1) / 2  # Convert -1 to 0, keep 1 as 1
+
+    # Convert labels to one-hot encoding
+    num_classes = 2
+    one_hot_labels = torch.zeros(labels.size(0), labels.size(1), num_classes, dtype=torch.float32)
+    one_hot_labels.scatter_(-1, labels.unsqueeze(-1), 1.0)
+    labels = one_hot_labels
 
     # Calculate number of images for each split (85%, 10%, 5%)
     total_images = len(image_ids)
