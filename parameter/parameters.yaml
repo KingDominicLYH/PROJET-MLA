@@ -40,6 +40,4 @@ ALL_ATTR:
 - Wearing_Necktie
 - Young
 image_size: 256
-preprocess_save_directory: dataset
-raw_attributes_file: dataset/list_attr_celeba.txt
-raw_img_directory: dataset/img_align_celeba
+processed_file: dataset
