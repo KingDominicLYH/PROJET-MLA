@@ -167,7 +167,7 @@ class Discriminator(nn.Module):
             nn.LeakyReLU(0.2, inplace=True),
 
             # Flatten layer
-            nn.Flatten(),  # Automatically flatten to [batch_size, 512 * 2 * 2]
+            nn.Flatten(),  # Automatically flatten to [batch_size, 512 * 1 * 1]
 
             # Fully connected layers
             nn.Linear(512, 512),  # First fully connected layer
