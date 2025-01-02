@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import yaml
+import os
 from torch.utils.data import DataLoader
 from torch import optim
 from torch.utils.tensorboard import SummaryWriter
@@ -33,10 +34,18 @@ model = Classifier(params).to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = get_optimizer(model, params.optimizer)  # 动态获取优化器
 
+
 # 获取当前时间戳并格式化为文件夹名称
 current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-log_dir = f'Tensorboard/{current_time}' # 动态生成TensorBoard日志目录
-writer = SummaryWriter(log_dir=log_dir) # 初始化TensorBoard的SummaryWriter
+log_dir = f'Tensorboard/{current_time}'  # 动态生成TensorBoard日志目录
+
+# 检查并创建目录
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+    print(f"Directory {log_dir} created.")
+
+# 初始化TensorBoard的SummaryWriter
+writer = SummaryWriter(log_dir=log_dir)
 
 # 训练过程
 def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, device):
@@ -130,11 +139,18 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
         writer.add_scalar('Valid Loss', valid_loss, epoch)
         writer.add_scalar('Valid Accuracy', valid_accuracy, epoch)
 
+        # 检查并创建保存目录
+        save_dir = "classifier_model"
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+            print(f"Directory {save_dir} created.")
+
         # 保存最好的模型
         if valid_loss < best_valid_loss:
             best_valid_loss = valid_loss
-            torch.save(model.state_dict(), 'best_model.pth')
-            print('Model saved!')
+            save_path = os.path.join(save_dir, "best_model.pth")  # 构造保存路径
+            torch.save(model.state_dict(), save_path)
+            print(f"Model saved to {save_path}!")
 
 
 # 运行训练
