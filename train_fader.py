@@ -2,6 +2,7 @@ import os
 import torch
 import yaml
 import datetime
+import classifier
 
 from torch import optim, nn
 from torch.utils.data import DataLoader
