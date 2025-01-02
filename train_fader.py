@@ -2,6 +2,7 @@ import os
 import torch
 import yaml
 import datetime
+import classifier
 
 from torch import optim, nn
 from torch.utils.data import DataLoader
@@ -136,18 +137,57 @@ def train():
 
         # f) 验证
         autoencoder.eval()
+        classifier.eval()  # 验证属性替换时需要分类器
         total_val_loss = 0.0
+        swap_accuracy = 0.0
+        num_samples = 0
+
         with torch.no_grad():
             for images, labels in valid_loader:
+                # 将数据移动到设备
                 images, labels = images.to(device), labels.to(device)
+
+                # -----------------------------
+                # 1. 图像重建误差验证
+                # -----------------------------
+                # 原始属性重建
                 recon_images = autoencoder(images, labels)
                 val_loss = reconstruction_criterion(recon_images, images)
                 total_val_loss += val_loss.item()
 
+                # -----------------------------
+                # 2. 属性替换效果验证
+                # -----------------------------
+                # 替换属性（例如：切换第 i 个属性，假设属性为“眼镜”）
+                modified_labels = labels.clone()
+                attribute_index = 0  # 假设第 0 个属性是目标属性
+                modified_labels[:, attribute_index] = 1 - modified_labels[:, attribute_index]  # 切换属性值
+
+                # 根据修改后的属性生成图像
+                swapped_images = autoencoder(images, modified_labels)
+
+                # 使用分类器验证生成图像是否符合修改后的属性
+                predicted_labels = classifier(swapped_images).argmax(dim=2)  # 分类器输出形状为 [batch_size, n_attributes, 2]
+                swap_accuracy += (
+                            predicted_labels[:, attribute_index] == modified_labels[:, attribute_index]).sum().item()
+                num_samples += images.size(0)
+
+        # 平均重建误差
         avg_val_loss = total_val_loss / len(valid_loader)
+
+        # 属性替换准确率
+        swap_accuracy = swap_accuracy / num_samples
+
+        # 使用 TensorBoard 记录验证指标
         writer.add_scalar("Validation/Reconstruction_Loss", avg_val_loss, epoch)
-        print(f"[Epoch {epoch}/{total_epochs}] Validation Loss: {avg_val_loss:.6f}")
+        writer.add_scalar("Validation/Attribute_Swap_Accuracy", swap_accuracy, epoch)
+
+        # 打印验证结果
+        print(
+            f"[Epoch {epoch}/{total_epochs}] Validation Loss: {avg_val_loss:.6f}, Attribute Swap Accuracy: {swap_accuracy:.4f}")
 
         # g) 保存模型
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
+            torch.save(autoencoder.state_dict(), "best_autoencoder.pth")
+            print("Best model saved.")
