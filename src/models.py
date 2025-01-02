@@ -56,7 +56,7 @@ class Decoder(nn.Module):
     def __init__(self, params):
         super(Decoder, self).__init__()
         self.params = params
-        self.n_attributes = params["n_attributes"]
+        self.n_attributes = params.n_attributes
         self.attribute_channels = 2 * self.n_attributes # Each attribute is represented as [1, 0] or [0, 1]
 
         # Define each group of ConvTranspose2d, BatchNorm2d, and Activation as a sequence
@@ -176,8 +176,7 @@ class Discriminator(nn.Module):
             nn.Linear(512, 512),  # First fully connected layer
             nn.LeakyReLU(0.2, inplace=True),
             nn.Dropout(0.3),  # Dropout applied with a rate of 0.3
-            nn.Linear(512, n_attributes),  # Second fully connected layer
-            nn.Sigmoid()  # Normalize outputs to [0, 1]
+            nn.Linear(512, params.n_attributes*2),  # Second fully connected layer
         )
 
     def forward(self, x):
@@ -192,6 +191,11 @@ class Discriminator(nn.Module):
         """
         # Pass through the entire model
         x = self.model(x)
+        # Reshape output to [batch_size, n_attributes, 2] for One-Hot encoding
+        x = x.view(x.size(0), self.n_attributes, 2)
+
+        # Apply softmax along the last dimension to get probabilities
+        x = torch.softmax(x, dim=-1)
         return x
 
 class Classifier(nn.Module):
