@@ -53,58 +53,59 @@ class Decoder(nn.Module):
     Decoder module: Reconstructs an image from a latent representation and attributes.
     """
 
-    def __init__(self, n_attributes):
+    def __init__(self, params):
         super(Decoder, self).__init__()
-        self.n_attributes = n_attributes
-        attribute_channels = 2 * n_attributes  # Each attribute is represented as [1, 0] or [0, 1]
+        self.params = params
+        self.n_attributes = params["n_attributes"]
+        self.attribute_channels = 2 * self.n_attributes # Each attribute is represented as [1, 0] or [0, 1]
 
         # Define each group of ConvTranspose2d, BatchNorm2d, and Activation as a sequence
         self.layers = nn.ModuleList([
             # Layer 1
             nn.Sequential(
-                nn.ConvTranspose2d(512 + attribute_channels, 512, kernel_size=4, stride=2, padding=1),
+                nn.ConvTranspose2d(512 + self.attribute_channels, 512, kernel_size=4, stride=2, padding=1),
                 nn.BatchNorm2d(512),
                 nn.ReLU(inplace=True)
             ),
 
             # Layer 2
             nn.Sequential(
-                nn.ConvTranspose2d(512 + attribute_channels, 256, kernel_size=4, stride=2, padding=1),
+                nn.ConvTranspose2d(512 + self.attribute_channels, 256, kernel_size=4, stride=2, padding=1),
                 nn.BatchNorm2d(256),
                 nn.ReLU(inplace=True)
             ),
 
             # Layer 3
             nn.Sequential(
-                nn.ConvTranspose2d(256 + attribute_channels, 128, kernel_size=4, stride=2, padding=1),
+                nn.ConvTranspose2d(256 + self.attribute_channels, 128, kernel_size=4, stride=2, padding=1),
                 nn.BatchNorm2d(128),
                 nn.ReLU(inplace=True)
             ),
 
             # Layer 4
             nn.Sequential(
-                nn.ConvTranspose2d(128 + attribute_channels, 64, kernel_size=4, stride=2, padding=1),
+                nn.ConvTranspose2d(128 + self.attribute_channels, 64, kernel_size=4, stride=2, padding=1),
                 nn.BatchNorm2d(64),
                 nn.ReLU(inplace=True)
             ),
 
             # Layer 5
             nn.Sequential(
-                nn.ConvTranspose2d(64 + attribute_channels, 32, kernel_size=4, stride=2, padding=1),
+                nn.ConvTranspose2d(64 + self.attribute_channels, 32, kernel_size=4, stride=2, padding=1),
                 nn.BatchNorm2d(32),
                 nn.ReLU(inplace=True)
             ),
 
             # Layer 6
             nn.Sequential(
-                nn.ConvTranspose2d(32 + attribute_channels, 16, kernel_size=4, stride=2, padding=1),
+                nn.ConvTranspose2d(32 + self.attribute_channels, 16, kernel_size=4, stride=2, padding=1),
                 nn.BatchNorm2d(16),
                 nn.ReLU(inplace=True)
             ),
 
             # Layer 7
             nn.Sequential(
-                nn.ConvTranspose2d(16 + attribute_channels, 3, kernel_size=4, stride=2, padding=1),
+                nn.ConvTranspose2d(16 + self.attribute_channels, 3, kernel_size=4, stride=2, padding=1),
                 nn.Tanh()  # Output normalized to the range [-1, 1]
             )
         ])
@@ -138,10 +139,11 @@ class AutoEncoder(nn.Module):
     """
     Full AutoEncoder: Combines the Encoder and Decoder.
     """
-    def __init__(self, n_attributes):
+    def __init__(self, params):
         super(AutoEncoder, self).__init__()
-        self.encoder = Encoder()  # Use the defined Encoder
-        self.decoder = Decoder(n_attributes)  # Use the defined Decoder and specify the number of attributes
+        self.params = params
+        self.encoder = Encoder(params)  # Use the defined Encoder
+        self.decoder = Decoder(params)  # Use the defined Decoder and specify the number of attributes
 
     def forward(self, x, attributes):
         # Encoder compresses the input image
@@ -155,9 +157,10 @@ class Discriminator(nn.Module):
     Discriminator: Combines convolutional layers and fully connected layers into a single Sequential module.
     Includes Dropout as per the paper's requirements.
     """
-    def __init__(self, n_attributes):
+    def __init__(self, params):
         super(Discriminator, self).__init__()
-        self.n_attributes = n_attributes
+        self.params = params
+        self.n_attributes = params["n_attributes"]
 
         # Combine convolutional and fully connected layers
         self.model = nn.Sequential(

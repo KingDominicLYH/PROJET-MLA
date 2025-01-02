@@ -1,3 +1,5 @@
+import os
+
 import torch
 import torch.nn as nn
 import yaml
@@ -37,6 +39,9 @@ optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 log_dir = f'Tensorboard/{current_time}' # 动态生成TensorBoard日志目录
 writer = SummaryWriter(log_dir=log_dir) # 初始化TensorBoard的SummaryWriter
+print(f"TensorBoard logs saving to: {log_dir}")
+
+os.makedirs(params.model_output_path, exist_ok=True)
 
 # 训练过程
 def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, device):
