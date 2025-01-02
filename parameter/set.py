@@ -9,6 +9,7 @@ params = {
     "raw_img_directory": "/home/mla/PROJET-MLA/dataset/img_align_celeba",  # 图像的原始目录路径
     "raw_attributes_file": "/home/mla/PROJET-MLA/dataset/list_attr_celeba.txt",
     "preprocess_save_directory": "/home/mla/PROJET-MLA/dataset",
+    "target_attribute_list": "Male",
     "ALL_ATTR": [
         "5_o_Clock_Shadow", "Arched_Eyebrows", "Attractive", "Bags_Under_Eyes", "Bald",
         "Bangs", "Big_Lips", "Big_Nose", "Black_Hair", "Blond_Hair", "Blurry", "Brown_Hair",

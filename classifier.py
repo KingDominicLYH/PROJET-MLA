@@ -30,7 +30,7 @@ valid_loader = DataLoader(valid_dataset, batch_size=params.batch_size, shuffle=F
 
 # 模型、损失函数和优化器
 model = Classifier(params).to(device)
-criterion = nn.BCELoss()
+criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 
 # 获取当前时间戳并格式化为文件夹名称
@@ -61,24 +61,24 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
         for i, (inputs, labels) in enumerate(train_loader_tqdm):
             if i >= num_iterations:
                 break  # 超过50000个样本后，终止训练
-
-            inputs, labels = inputs.to(device), labels.to(device)
+            label_indices = labels.argmax(dim=-1)  # [N, 40, 2] -> [N, 40]
+            inputs, label_indices, labels = inputs.to(device), label_indices.to(device), labels.to(device)
 
             optimizer.zero_grad()  # 梯度清零
 
             outputs = model(inputs)
-            loss = criterion(outputs, labels)
+            loss = criterion(outputs.permute(0, 2, 1), label_indices)  # 调整输出形状为 [N, 2, 40]
             # 反向传播
             loss.backward()
             # 更新参数
             optimizer.step()
 
             train_loss += loss.item() * inputs.size(0)  # 累加损失
-            preds = outputs > 0.5  # 二分类的阈值0.5
+            preds = outputs.argmax(dim=-1)  # [N, 40, 2] -> [N, 40]
 
             # 计算准确度
-            correct_predictions += (preds == labels).sum().item()
-            total_predictions += labels.numel()
+            correct_predictions += (preds == label_indices).sum().item()
+            total_predictions += label_indices.numel()
 
             # 更新进度条
             train_loader_tqdm.set_postfix({'Loss': f'{loss.item():.4f}'})
@@ -100,18 +100,19 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
                 if i >= num_valid_iterations:
                     break  # 超过10000个样本后，终止训练
 
-                inputs, labels = inputs.to(device), labels.to(device)
+                label_indices = labels.argmax(dim=-1)  # [N, 40, 2] -> [N, 40]
+                inputs, label_indices, labels = inputs.to(device), label_indices.to(device), labels.to(device)
                 outputs = model(inputs)
 
-                loss = criterion(outputs, labels)
+                loss = criterion(outputs.permute(0, 2, 1), label_indices)  # 调整输出形状为 [N, 2, 40]
 
                 valid_loss += loss.item() * inputs.size(0)
 
-                preds = outputs > 0.5
+                preds = outputs.argmax(dim=-1)  # [N, 40, 2] -> [N, 40]
 
                 # 计算准确度
-                correct_predictions += (preds == labels).sum().item()
-                total_predictions += labels.numel()
+                correct_predictions += (preds == label_indices).sum().item()
+                total_predictions += label_indices.numel()
 
         valid_loss /= len(valid_loader.dataset)
         valid_accuracy = correct_predictions / total_predictions
