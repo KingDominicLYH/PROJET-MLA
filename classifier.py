@@ -1,5 +1,3 @@
-import os
-
 import torch
 import torch.nn as nn
 import yaml
@@ -10,7 +8,7 @@ from datetime import datetime  # 导入datetime模块
 from tqdm import tqdm  # 导入进度条库
 
 from src.models import Classifier
-from src.tools import CelebADataset, Config
+from src.tools import CelebADataset, Config, get_optimizer
 
 # 加载YAML配置
 with open("parameter/parameters_classifier.yaml", "r") as f:
@@ -33,15 +31,12 @@ valid_loader = DataLoader(valid_dataset, batch_size=params.batch_size, shuffle=F
 # 模型、损失函数和优化器
 model = Classifier(params).to(device)
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
+optimizer = get_optimizer(model, params.optimizer)  # 动态获取优化器
 
 # 获取当前时间戳并格式化为文件夹名称
 current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 log_dir = f'Tensorboard/{current_time}' # 动态生成TensorBoard日志目录
 writer = SummaryWriter(log_dir=log_dir) # 初始化TensorBoard的SummaryWriter
-print(f"TensorBoard logs saving to: {log_dir}")
-
-os.makedirs(params.model_output_path, exist_ok=True)
 
 # 训练过程
 def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, device):
