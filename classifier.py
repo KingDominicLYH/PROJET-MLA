@@ -83,7 +83,8 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
             num_samples += params.batch_size
             # 更新进度条
             train_loader_tqdm.set_postfix({'Loss': f'{loss.item():.4f}'})
-
+        print(num_samples)
+        print(len(train_loader.dataset))
         train_loss /= len(train_loader.dataset)
         accuracy = correct_predictions / total_predictions
 
