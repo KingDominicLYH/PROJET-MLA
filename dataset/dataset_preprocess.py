@@ -37,8 +37,9 @@ def preprocess_and_save_dataset(img_dir, attr_file, save_dir, img_size):
 
     # Convert labels to one-hot encoding
     num_classes = 2
-    one_hot_labels = torch.zeros(labels.size(0), labels.size(1), num_classes, dtype=torch.float32)
-    one_hot_labels.scatter_(-1, labels.unsqueeze(-1), 1.0)
+    one_hot_labels = torch.zeros(labels.size(0), labels.size(1), 2, dtype=torch.float32)
+    one_hot_labels[..., 0] = (labels == -1).float()  # -1 转为 [1, 0]
+    one_hot_labels[..., 1] = (labels == 1).float()  # 1 转为 [0, 1]
     labels = one_hot_labels
 
     # Calculate number of images for each split (85%, 10%, 5%)
