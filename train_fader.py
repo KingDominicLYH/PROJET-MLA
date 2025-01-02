@@ -74,6 +74,12 @@ def train():
         autoencoder.train()
         discriminator.train()
 
+        # 初始化用于统计的变量
+        total_recon_loss = 0.0
+        total_discriminator_loss = 0.0
+        total_adversarial_loss = 0.0
+        num_samples = 0
+
         train_loader_tqdm = tqdm(train_loader, desc=f"Epoch {epoch}/{total_epochs}", dynamic_ncols=True, total=num_iterations)
         for step, (images, labels) in enumerate(train_loader_tqdm):
             if step >= num_iterations:
@@ -105,16 +111,28 @@ def train():
             ae_loss.backward()
             autoencoder_optimizer.step()
 
+            # 累加每个 step 的损失
+            total_recon_loss += recon_loss.item() * params.batch_size
+            total_discriminator_loss += loss_discriminator.item() * params.batch_size
+            total_adversarial_loss += adversarial_loss.item() * params.batch_size
+            num_samples += params.batch_size
+
             # (iii) 日志 & 进度条
             train_loader_tqdm.set_postfix({
                 "Recon": recon_loss.item(),
                 "D_loss": loss_discriminator.item(),
                 "Adv": adversarial_loss.item()
             })
-            global_step = epoch * len(train_loader) + step
-            writer.add_scalar("Train/Reconstruction_Loss", recon_loss.item(), global_step)
-            writer.add_scalar("Train/Discriminator_Loss", loss_discriminator.item(), global_step)
-            writer.add_scalar("Train/Adversarial_Loss", adversarial_loss.item(), global_step)
+
+        # 计算 epoch 平均损失
+        avg_recon_loss = total_recon_loss / num_samples
+        avg_discriminator_loss = total_discriminator_loss / num_samples
+        avg_adversarial_loss = total_adversarial_loss / num_samples
+
+        # 记录到 TensorBoard
+        writer.add_scalar("Epoch_Avg_Reconstruction_Loss", avg_recon_loss, epoch)
+        writer.add_scalar("Epoch_Avg_Discriminator_Loss", avg_discriminator_loss, epoch)
+        writer.add_scalar("Epoch_Avg_Adversarial_Loss", avg_adversarial_loss, epoch)
 
         # f) 验证
         autoencoder.eval()

@@ -53,6 +53,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
         train_loss = 0
         correct_predictions = 0
         total_predictions = 0
+        num_samples = 0
 
         # 创建进度条
         train_loader_tqdm = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{n_epochs}", dynamic_ncols=True, total=num_iterations)
@@ -79,7 +80,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
             # 计算准确度
             correct_predictions += (preds == label_indices).sum().item()
             total_predictions += label_indices.numel()
-
+            num_samples += params.batch_size
             # 更新进度条
             train_loader_tqdm.set_postfix({'Loss': f'{loss.item():.4f}'})
 
