@@ -19,6 +19,7 @@ params = {
     "n_attributes": 40,
     "total_train_samples": 50000,
     "total_valid_samples": 10000,
+    "optimizer": "adam,lr=0.001",  # 新增优化器配置
 
 
     # "autoencoder_optimizer": "adam,lr=0.0002",  # Autoencoder的优化器配置
