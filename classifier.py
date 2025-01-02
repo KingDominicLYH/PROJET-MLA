@@ -83,9 +83,8 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
             num_samples += params.batch_size
             # 更新进度条
             train_loader_tqdm.set_postfix({'Loss': f'{loss.item():.4f}'})
-        print(num_samples)
-        print(len(train_loader.dataset))
-        train_loss /= len(train_loader.dataset)
+
+        train_loss /= num_samples
         accuracy = correct_predictions / total_predictions
 
         # 验证
@@ -93,6 +92,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
         valid_loss = 0.0
         correct_predictions = 0
         total_predictions = 0
+        num_samples = 0
 
         # 创建验证进度条
         valid_loader_tqdm = tqdm(valid_loader, desc=f"Validating Epoch {epoch + 1}/{n_epochs}", dynamic_ncols=True, total=num_valid_iterations)
@@ -115,8 +115,9 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
                 # 计算准确度
                 correct_predictions += (preds == label_indices).sum().item()
                 total_predictions += label_indices.numel()
+                num_samples += params.batch_size
 
-        valid_loss /= len(valid_loader.dataset)
+        valid_loss /= num_samples
         valid_accuracy = correct_predictions / total_predictions
 
         # 打印每个epoch的结果
