@@ -23,6 +23,7 @@ params = {
     "model_path": "classifier_model/best_model.pth",
     "model_output_path": "model",
     "total_train_samples": 50000,
+    "total_epochs": 1000,
     "batch_size": 32  # 批量大小
 }
 
