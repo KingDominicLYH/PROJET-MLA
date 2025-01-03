@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
 import yaml
 
-from train_fader import classifier
 
 # ========================
 # 配置和初始化
@@ -23,7 +22,7 @@ params = Config(params_dict)
 
 classifier = Classifier(params).to(device)
 model_path = "best_model.pth"
-classifier.load_state_dict(torch.load(model_path),map_location=device)
+classifier.load_state_dict(torch.load(model_path), map_location=device)
 
 # 模型路径和测试数据路径
 
