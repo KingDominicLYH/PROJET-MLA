@@ -3,7 +3,6 @@ import torch
 import yaml
 from datetime import datetime
 
-from keras.src.ops import shape
 from torch import optim, nn
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
