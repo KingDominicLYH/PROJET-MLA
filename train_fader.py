@@ -27,8 +27,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 # Data preparation: load training and validation datasets
-train_dataset = CelebADataset(data_dir=params.processed_file, params=params, split="test")
-#train_dataset = CelebADataset(data_dir=params.processed_file, params=params, split="train")
+train_dataset = CelebADataset(data_dir=params.processed_file, params=params, split="train")
 valid_dataset = CelebADataset(data_dir=params.processed_file, params=params, split="val")
 
 train_loader = DataLoader(train_dataset, batch_size=params.batch_size, shuffle=True, pin_memory=True)
@@ -113,7 +112,6 @@ def train():
                 0.001,  # 最大值
                 (step_counter / max_steps) * 0.001  # 按比例增长
             )
-            print(f"Step {step_counter}: Latent Discriminator Loss Weight = {params.latent_discriminator_loss_weight}")
 
             # (i) 训练判别器
             latent = autoencoder.encoder(images)
@@ -155,6 +153,7 @@ def train():
             step_counter += params.batch_size
 
         # 计算 epoch 平均损失
+        print(step)
         avg_recon_loss = total_recon_loss / num_samples
         avg_discriminator_loss = total_discriminator_loss / num_samples
         avg_adversarial_loss = total_adversarial_loss / num_samples
