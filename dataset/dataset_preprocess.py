@@ -91,7 +91,7 @@ def process_and_save_images(img_dir, image_ids, labels, save_dir, data_type, img
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         # Crop and resize (Crop the central region)
-        image = image[20:-20, :, :]  # Crop the central region
+        #image = image[20:-20, :, :]  # Crop the central region
         image = cv2.resize(image, (img_size, img_size), interpolation=cv2.INTER_LANCZOS4)
 
         # Append the image (still as NumPy array)
