@@ -57,7 +57,7 @@ class Decoder(nn.Module):
         super(Decoder, self).__init__()
         self.params = params
         self.n_attributes = params.n_attributes
-        self.attribute_channels = 2 * self.n_attributes # Each attribute is represented as [1, 0] or [0, 1]
+        self.attribute_channels = self.n_attributes # Each attribute is represented as [1, 0] or [0, 1]
 
         # Define each group of ConvTranspose2d, BatchNorm2d, and Activation as a sequence
         self.layers = nn.ModuleList([
