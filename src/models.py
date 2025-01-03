@@ -120,26 +120,18 @@ class Decoder(nn.Module):
         """
         # Expand attribute vector to match spatial dimensions of the latent representation
         batch_size, _, h, w = z.shape
-        print(f"z shape: {z.shape}, attributes shape before reshape: {attributes.shape}")
-        attributes = attributes.reshape(batch_size, -1, 1, 1)
-        attributes = attributes.expand(batch_size, -1, h, w)
-        print(f"attributes shape after expand: {attributes.shape}")
+
+        attributes = attributes.reshape(batch_size, -1, 1, 1)  # [batch_size, 2n, 1, 1]
+        attributes = attributes.expand(batch_size, -1, h, w)  # [batch_size, 2n, h, w]
 
         # 拼接前打印 z 和 attributes 的通道数
-        print(f"z channels: {z.shape[1]}, attributes channels: {attributes.shape[1]}")
-        x = torch.cat([z, attributes], dim=1)
-        print(f"x shape after concatenation: {x.shape}")
-        # attributes = attributes.reshape(batch_size, -1, 1, 1)  # Reshape to (batch_size, 2n, 1, 1)
-        # attributes = attributes.expand(batch_size, -1, h, w)  # Expand to (batch_size, 2n, h, w)
-        #
-        # # Initial input: concatenate latent representation and attributes
-        # x = torch.cat([z, attributes], dim=1)  # Shape: (batch_size, 512 + 2n, h, w)
+        x = z
 
         # Decode through each sequence
         for layer in self.layers:
             _, _, h, w = x.shape
             # Concatenate attributes before each ConvTranspose2d layer
-            attributes_resized = attributes.expand(batch_size, -1, h, w)  # 调整属性分辨率
+            attributes_resized = nn.functional.interpolate(attributes, size=(h, w), mode="nearest")
             x = torch.cat([x, attributes_resized], dim=1)
             x = layer(x)  # Pass through the sequence (ConvTranspose2d + BatchNorm + Activation)
 

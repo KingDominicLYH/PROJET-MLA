@@ -3,6 +3,7 @@ import torch
 import yaml
 from datetime import datetime
 
+from keras.src.ops import shape
 from torch import optim, nn
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
@@ -36,6 +37,11 @@ valid_loader = DataLoader(valid_dataset, batch_size=params.batch_size, shuffle=F
 
 print("Train dataset size:", len(train_dataset))
 print("Validation dataset size:", len(valid_dataset))
+
+target_attribute_indices = [
+    params.ALL_ATTR.index(attr) for attr in params.target_attribute_list
+]
+print(f"Target attribute indices: {target_attribute_indices}")
 
 # Initialize models
 autoencoder = AutoEncoder(params).to(device)
@@ -81,6 +87,7 @@ def train():
 
     # 计算每个 epoch 中的迭代次数
     num_iterations = params.total_train_samples // params.batch_size
+    step_counter = 0  # 用于记录当前训练步数
 
     total_epochs = params.total_epochs
     for epoch in range(1, total_epochs + 1):
@@ -100,6 +107,14 @@ def train():
                 break  # 超过50000个样本后，终止训练
             label_indices = labels.argmax(dim=-1)  # [N, 40, 2] -> [N, 40]
             images, labels, label_indices = images.to(device), labels.to(device), label_indices.to(device)
+
+            # 动态调整 discriminator_loss_weight
+            max_steps = 500000
+            params.latent_discriminator_loss_weight = min(
+                0.001,  # 最大值
+                (step_counter / max_steps) * 0.001  # 按比例增长
+            )
+            print(f"Step {step_counter}: Latent Discriminator Loss Weight = {params.latent_discriminator_loss_weight}")
 
             # (i) 训练判别器
             latent = autoencoder.encoder(images)
@@ -138,6 +153,8 @@ def train():
                 "Adv": adversarial_loss.item()
             })
 
+            step_counter += params.batch_size
+
         # 计算 epoch 平均损失
         avg_recon_loss = total_recon_loss / num_samples
         avg_discriminator_loss = total_discriminator_loss / num_samples
@@ -162,19 +179,22 @@ def train():
                 images, labels = images.to(device), labels.to(device)
 
                 # 替换属性（例如：切换第 i 个属性，假设属性为“眼镜”）
-                modified_labels = labels.clone()
-                attribute_index = 0  # 假设第 0 个属性是目标属性
-                modified_labels[:, attribute_index] = 1 - modified_labels[:, attribute_index]  # 切换属性值
+                # 从 [32, 1, 2] 转换为 [32, 1]，得到单个类别索引（0 或 1）
+                modified_labels = labels.clone()  # [32, 1, 2]
+                modified_labels[:, :, 0], modified_labels[:, :, 1] = modified_labels[:, :, 1], modified_labels[:, :,0].clone()
 
-                # 根据修改后的属性生成图像
                 swapped_images = autoencoder(images, modified_labels)
+
+                modified_labels = modified_labels.argmax(dim=2)  # [32, 1]
 
                 # 使用分类器验证生成图像是否符合修改后的属性
                 predicted_labels = classifier(swapped_images).argmax(dim=2)  # 分类器输出形状为 [batch_size, n_attributes, 2]
-                swap_accuracy += (predicted_labels[:, attribute_index] == modified_labels[:, attribute_index]).sum().item()
+                target_predicted_labels = predicted_labels[:, target_attribute_indices]  # 只保留目标属性的预测值
+
+                # 计算属性替换的准确性
+                swap_accuracy += (target_predicted_labels == modified_labels).sum().item()
+
                 num_samples += images.size(0)
-                print(images.size(0))
-                print(params.batchsize)
 
         # 属性替换准确率
         swap_accuracy = swap_accuracy / num_samples

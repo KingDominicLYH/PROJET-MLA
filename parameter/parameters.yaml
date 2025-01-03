@@ -39,7 +39,9 @@ ALL_ATTR:
 - Wearing_Necklace
 - Wearing_Necktie
 - Young
+autoencoder_loss_weight: 1
 batch_size: 32
+discriminator_loss_weight: 0
 image_size: 256
 learning_rate: 0.001
 model_output_path: model
