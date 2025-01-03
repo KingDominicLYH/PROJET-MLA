@@ -1,13 +1,12 @@
 import torch
-from torchvision import transforms
-import os
-from PIL import Image
-from dataset.dataset_preprocess import preprocess_and_save_dataset
+from src.models import Classifier
 from src.tools import CelebADataset, Config
 import random
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
 import yaml
+
+from train_fader import classifier
 
 # ========================
 # 配置和初始化
@@ -17,17 +16,23 @@ config_file = "parameter/parameters_test.yaml"
 with open(config_file, "r") as f:
     params_dict = yaml.safe_load(f)
 
+# 加载设备
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 params = Config(params_dict)
 
-# 模型路径和测试数据路径
+classifier = Classifier(params).to(device)
 model_path = "best_model.pth"
+classifier.load_state_dict(torch.load(model_path),map_location=device)
+
+# 模型路径和测试数据路径
+
 test_data_path = params.preprocess_save_directory + "/test_dataset.pth"
 
 # 属性名称（从配置中获取或指定）
 attribute_names = params.target_attribute_list  # 目标属性名称列表
 
-# 加载设备
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 # ========================
 # 加载分类器模型
