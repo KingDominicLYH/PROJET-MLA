@@ -6,7 +6,7 @@ class Encoder(nn.Module):
     Encoder module: Compresses an input image into a latent representation.
     """
 
-    def __init__(self):
+    def __init__(self, params):
         super(Encoder, self).__init__()
 
         self.layers = nn.Sequential(

@@ -22,7 +22,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 # Data preparation: load training and validation datasets
-train_dataset = CelebADataset(data_dir=params.processed_file, params=params, split="train")
+train_dataset = CelebADataset(data_dir=params.processed_file, params=params, split="test")
+#train_dataset = CelebADataset(data_dir=params.processed_file, params=params, split="train")
 valid_dataset = CelebADataset(data_dir=params.processed_file, params=params, split="val")
 
 train_loader = DataLoader(train_dataset, batch_size=params.batch_size, shuffle=True, pin_memory=True)
@@ -30,7 +31,6 @@ valid_loader = DataLoader(valid_dataset, batch_size=params.batch_size, shuffle=F
 
 print("Train dataset size:", len(train_dataset))
 print("Validation dataset size:", len(valid_dataset))
-print(f"n_attributes = {params.n_attributes}")
 
 # Initialize models
 autoencoder = AutoEncoder(params).to(device)
