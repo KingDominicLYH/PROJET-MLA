@@ -38,7 +38,6 @@ discriminator = Discriminator(params).to(device)
 
 # Load the pre-trained classifier model
 classifier = Classifier(params).to(device)
-model_path = "best_model.pth"
 classifier.load_state_dict(torch.load(params.model_path, map_location=device)).eval()
 
 # Setup optimizers

@@ -20,6 +20,7 @@ params = {
         "Wavy_Hair", "Wearing_Earrings", "Wearing_Hat", "Wearing_Lipstick",
         "Wearing_Necklace", "Wearing_Necktie", "Young"
     ],
+    "model_path": "classifier_model/best_model.pth",
     "batch_size": 32  # 批量大小
 }
 
