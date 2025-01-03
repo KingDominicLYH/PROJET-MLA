@@ -2,7 +2,6 @@ import os
 import torch
 import yaml
 import datetime
-import classifier
 
 from torch import optim, nn
 from torch.utils.data import DataLoader
@@ -37,6 +36,9 @@ print(f"n_attributes = {params.n_attributes}")
 autoencoder = AutoEncoder(params).to(device)
 discriminator = Discriminator(params).to(device)
 
+# Load the pre-trained classifier model
+classifier = torch.load("best_model.pth", map_location=device).eval()
+
 # Setup optimizers
 autoencoder_optimizer = optim.Adam(
         autoencoder.parameters(),
@@ -56,18 +58,23 @@ classification_criterion = nn.CrossEntropyLoss()
 
 # 获取当前时间戳并格式化为文件夹名称
 current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-log_dir = f'Tensorboard/train_{current_time}' # 动态生成TensorBoard日志目录
-writer = SummaryWriter(log_dir=log_dir) # 初始化TensorBoard的SummaryWriter
+log_dir = f'Tensorboard/train_{current_time}'  # 动态生成 TensorBoard 日志目录
+
+# 检查并创建目录
+os.makedirs(log_dir, exist_ok=True)  # 如果目录不存在，则创建
 print(f"TensorBoard logs saving to: {log_dir}")
+
+# 初始化 TensorBoard 的 SummaryWriter
+writer = SummaryWriter(log_dir=log_dir)
 
 os.makedirs(params.model_output_path, exist_ok=True)
 
+
 def train():
-    best_val_loss = float('inf')
+    best_swap_accuracy = 0.0
 
     # 计算每个 epoch 中的迭代次数
     num_iterations = params.total_train_samples // params.batch_size
-    num_valid_iterations = params.total_valid_samples // params.batch_size
 
     total_epochs = params.total_epochs
     for epoch in range(1, total_epochs + 1):
@@ -138,7 +145,7 @@ def train():
         # f) 验证
         autoencoder.eval()
         classifier.eval()  # 验证属性替换时需要分类器
-        total_val_loss = 0.0
+        # total_val_loss = 0.0
         swap_accuracy = 0.0
         num_samples = 0
 
@@ -160,6 +167,8 @@ def train():
                 predicted_labels = classifier(swapped_images).argmax(dim=2)  # 分类器输出形状为 [batch_size, n_attributes, 2]
                 swap_accuracy += (predicted_labels[:, attribute_index] == modified_labels[:, attribute_index]).sum().item()
                 num_samples += images.size(0)
+                print(images.size(0))
+                print(params.batchsize)
 
         # 属性替换准确率
         swap_accuracy = swap_accuracy / num_samples
@@ -170,8 +179,13 @@ def train():
         # 打印验证结果
         print(f"[Epoch {epoch}/{total_epochs}] Attribute Swap Accuracy: {swap_accuracy:.4f}")
 
+        # 定义保存目录
+        save_dir = "train_model"
+        os.makedirs(save_dir, exist_ok=True)  # 如果目录不存在，则创建
+
         # g) 保存模型
         if swap_accuracy > best_swap_accuracy:  # 如果当前模型的属性替换效果最佳
             best_swap_accuracy = swap_accuracy
-            torch.save(autoencoder.state_dict(), "best_autoencoder.pth")
-            print("Best model saved based on Attribute Swap Accuracy.")
+            save_path = os.path.join(save_dir, "best_autoencoder.pth")  # 构造保存路径
+            torch.save(autoencoder.state_dict(), save_path)  # 保存模型状态字典
+            print(f"Best model saved based on Attribute Swap Accuracy to {save_path}.")
