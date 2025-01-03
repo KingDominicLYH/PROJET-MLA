@@ -160,7 +160,7 @@ class Discriminator(nn.Module):
     def __init__(self, params):
         super(Discriminator, self).__init__()
         self.params = params
-        self.n_attributes = params["n_attributes"]
+        self.n_attributes = params.n_attributes
 
         # Combine convolutional and fully connected layers
         self.model = nn.Sequential(
