@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import yaml
+import os
 from torch.utils.data import DataLoader
 from torch import optim
 from torch.utils.tensorboard import SummaryWriter
@@ -8,7 +9,7 @@ from datetime import datetime  # 导入datetime模块
 from tqdm import tqdm  # 导入进度条库
 
 from src.models import Classifier
-from src.tools import CelebADataset, Config
+from src.tools import CelebADataset, Config, get_optimizer
 
 # 加载YAML配置
 with open("parameter/parameters_classifier.yaml", "r") as f:
@@ -30,13 +31,21 @@ valid_loader = DataLoader(valid_dataset, batch_size=params.batch_size, shuffle=F
 
 # 模型、损失函数和优化器
 model = Classifier(params).to(device)
-criterion = nn.BCELoss()
-optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
+criterion = nn.CrossEntropyLoss()
+optimizer = get_optimizer(model, params.optimizer)  # 动态获取优化器
+
 
 # 获取当前时间戳并格式化为文件夹名称
 current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-log_dir = f'Tensorboard/{current_time}' # 动态生成TensorBoard日志目录
-writer = SummaryWriter(log_dir=log_dir) # 初始化TensorBoard的SummaryWriter
+log_dir = f'Tensorboard/{current_time}'  # 动态生成TensorBoard日志目录
+
+# 检查并创建目录
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+    print(f"Directory {log_dir} created.")
+
+# 初始化TensorBoard的SummaryWriter
+writer = SummaryWriter(log_dir=log_dir)
 
 # 训练过程
 def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, device):
@@ -53,6 +62,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
         train_loss = 0
         correct_predictions = 0
         total_predictions = 0
+        num_samples = 0
 
         # 创建进度条
         train_loader_tqdm = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{n_epochs}", dynamic_ncols=True, total=num_iterations)
@@ -61,29 +71,29 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
         for i, (inputs, labels) in enumerate(train_loader_tqdm):
             if i >= num_iterations:
                 break  # 超过50000个样本后，终止训练
-
-            inputs, labels = inputs.to(device), labels.to(device)
+            label_indices = labels.argmax(dim=-1)  # [N, 40, 2] -> [N, 40]
+            inputs, label_indices, labels = inputs.to(device), label_indices.to(device), labels.to(device)
 
             optimizer.zero_grad()  # 梯度清零
 
             outputs = model(inputs)
-            loss = criterion(outputs, labels)
+            loss = criterion(outputs.permute(0, 2, 1), label_indices)  # 调整输出形状为 [N, 2, 40]
             # 反向传播
             loss.backward()
             # 更新参数
             optimizer.step()
 
             train_loss += loss.item() * inputs.size(0)  # 累加损失
-            preds = outputs > 0.5  # 二分类的阈值0.5
+            preds = outputs.argmax(dim=-1)  # [N, 40, 2] -> [N, 40]
 
             # 计算准确度
-            correct_predictions += (preds == labels).sum().item()
-            total_predictions += labels.numel()
-
+            correct_predictions += (preds == label_indices).sum().item()
+            total_predictions += label_indices.numel()
+            num_samples += params.batch_size
             # 更新进度条
             train_loader_tqdm.set_postfix({'Loss': f'{loss.item():.4f}'})
 
-        train_loss /= len(train_loader.dataset)
+        train_loss /= num_samples
         accuracy = correct_predictions / total_predictions
 
         # 验证
@@ -91,6 +101,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
         valid_loss = 0.0
         correct_predictions = 0
         total_predictions = 0
+        num_samples = 0
 
         # 创建验证进度条
         valid_loader_tqdm = tqdm(valid_loader, desc=f"Validating Epoch {epoch + 1}/{n_epochs}", dynamic_ncols=True, total=num_valid_iterations)
@@ -100,20 +111,22 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
                 if i >= num_valid_iterations:
                     break  # 超过10000个样本后，终止训练
 
-                inputs, labels = inputs.to(device), labels.to(device)
+                label_indices = labels.argmax(dim=-1)  # [N, 40, 2] -> [N, 40]
+                inputs, label_indices, labels = inputs.to(device), label_indices.to(device), labels.to(device)
                 outputs = model(inputs)
 
-                loss = criterion(outputs, labels)
+                loss = criterion(outputs.permute(0, 2, 1), label_indices)  # 调整输出形状为 [N, 2, 40]
 
                 valid_loss += loss.item() * inputs.size(0)
 
-                preds = outputs > 0.5
+                preds = outputs.argmax(dim=-1)  # [N, 40, 2] -> [N, 40]
 
                 # 计算准确度
-                correct_predictions += (preds == labels).sum().item()
-                total_predictions += labels.numel()
+                correct_predictions += (preds == label_indices).sum().item()
+                total_predictions += label_indices.numel()
+                num_samples += params.batch_size
 
-        valid_loss /= len(valid_loader.dataset)
+        valid_loss /= num_samples
         valid_accuracy = correct_predictions / total_predictions
 
         # 打印每个epoch的结果
@@ -126,11 +139,18 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
         writer.add_scalar('Valid Loss', valid_loss, epoch)
         writer.add_scalar('Valid Accuracy', valid_accuracy, epoch)
 
+        # 检查并创建保存目录
+        save_dir = "classifier_model"
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+            print(f"Directory {save_dir} created.")
+
         # 保存最好的模型
         if valid_loss < best_valid_loss:
             best_valid_loss = valid_loss
-            torch.save(model.state_dict(), 'best_model.pth')
-            print('Model saved!')
+            save_path = os.path.join(save_dir, "best_model.pth")  # 构造保存路径
+            torch.save(model.state_dict(), save_path)
+            print(f"Model saved to {save_path}!")
 
 
 # 运行训练

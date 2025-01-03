@@ -41,3 +41,5 @@ ALL_ATTR:
 - Young
 image_size: 256
 processed_file: dataset
+target_attribute_list:
+- Male
