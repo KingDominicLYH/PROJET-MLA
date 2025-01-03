@@ -11,6 +11,7 @@ params = {
         "Wavy_Hair", "Wearing_Earrings", "Wearing_Hat", "Wearing_Lipstick",
         "Wearing_Necklace", "Wearing_Necktie", "Young"
     ],
+    "save_dir": "classifier_model",
     "processed_file": "dataset",  # Autoencoder的优化器配置
     "batch_size": 32,                           # 每次训练的样本数
     "learning_rate": 1e-3,                           # 每次训练的样本数

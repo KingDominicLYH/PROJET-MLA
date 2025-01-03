@@ -20,9 +20,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 params = Config(params_dict)
 
-classifier = Classifier(params).to(device)
+model = Classifier(params).to(device)
 model_path = "best_model.pth"
-classifier.load_state_dict(torch.load(model_path), map_location=device)
+model.load_state_dict(torch.load(model_path, map_location=device))
 
 # 模型路径和测试数据路径
 
@@ -37,8 +37,6 @@ attribute_names = params.target_attribute_list  # 目标属性名称列表
 # 加载分类器模型
 # ========================
 # 加载模型
-model = torch.load(model_path, map_location=device)
-model.eval()  # 设置为评估模式
 
 # ========================
 # 加载测试数据

@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from src.models import AutoEncoder, Discriminator
+from src.models import AutoEncoder, Discriminator, Classifier
 from src.tools import CelebADataset, Config
 
 # Load configuration parameters from the YAML file
@@ -37,7 +37,9 @@ autoencoder = AutoEncoder(params).to(device)
 discriminator = Discriminator(params).to(device)
 
 # Load the pre-trained classifier model
-classifier = torch.load("best_model.pth", map_location=device).eval()
+classifier = Classifier(params).to(device)
+model_path = "best_model.pth"
+classifier.load_state_dict(torch.load(params.model_path, map_location=device)).eval()
 
 # Setup optimizers
 autoencoder_optimizer = optim.Adam(

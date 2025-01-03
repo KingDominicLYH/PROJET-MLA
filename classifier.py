@@ -140,15 +140,14 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
         writer.add_scalar('Valid Accuracy', valid_accuracy, epoch)
 
         # 检查并创建保存目录
-        save_dir = "classifier_model"
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
-            print(f"Directory {save_dir} created.")
+        if not os.path.exists(params.save_dir):
+            os.makedirs(params.save_dir)
+            print(f"Directory {params.save_dir} created.")
 
         # 保存最好的模型
         if valid_loss < best_valid_loss:
             best_valid_loss = valid_loss
-            save_path = os.path.join(save_dir, "best_model.pth")  # 构造保存路径
+            save_path = os.path.join(params.save_dir, "best_model.pth")  # 构造保存路径
             torch.save(model.state_dict(), save_path)
             print(f"Model saved to {save_path}!")
 
