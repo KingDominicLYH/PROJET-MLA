@@ -45,6 +45,7 @@ learning_rate: 0.001
 n_attributes: 40
 optimizer: adam,lr=0.001
 processed_file: dataset
+save_dir: classifier_model
 target_attribute_list: ALL
 total_epochs: 1000
 total_train_samples: 50000
