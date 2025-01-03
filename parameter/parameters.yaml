@@ -42,6 +42,7 @@ ALL_ATTR:
 batch_size: 32
 image_size: 256
 learning_rate: 0.001
+model_path: classifier_model/best_model.pth
 n_attributes: 1
 preprocess_save_directory: /home/mla/PROJET-MLA/dataset
 processed_file: dataset
