@@ -156,7 +156,6 @@ def train():
             step_counter += params.batch_size
 
         # 计算 epoch 平均损失
-        print(step)
         avg_recon_loss = total_recon_loss / num_samples
         avg_discriminator_loss = total_discriminator_loss / num_samples
         avg_adversarial_loss = total_adversarial_loss / num_samples
