@@ -84,7 +84,7 @@ def train():
 
     total_epochs = params.total_epochs
     for epoch in range(1, total_epochs + 1):
-        print(f'Starting Epoch {epoch + 1}/{total_epochs}')
+        print(f'Starting Epoch {epoch}/{total_epochs}')
         autoencoder.train()
         discriminator.train()
 

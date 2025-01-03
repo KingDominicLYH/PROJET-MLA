@@ -129,8 +129,10 @@ class Decoder(nn.Module):
 
         # Decode through each sequence
         for layer in self.layers:
+            _, _, h, w = x.shape
             # Concatenate attributes before each ConvTranspose2d layer
-            x = torch.cat([x, attributes], dim=1)
+            attributes_resized = attributes.expand(batch_size, -1, h, w)  # 调整属性分辨率
+            x = torch.cat([x, attributes_resized], dim=1)
             x = layer(x)  # Pass through the sequence (ConvTranspose2d + BatchNorm + Activation)
 
         return x
