@@ -39,12 +39,13 @@ ALL_ATTR:
 - Wearing_Necklace
 - Wearing_Necktie
 - Young
+batch_size: 32
 image_size: 256
-processed_file: dataset
-target_attribute_list:
-- Male
 learning_rate: 0.001
 n_attributes: 1
 preprocess_save_directory: /home/mla/PROJET-MLA/dataset
+processed_file: dataset
 raw_attributes_file: /home/mla/PROJET-MLA/dataset/list_attr_celeba.txt
 raw_img_directory: /home/mla/PROJET-MLA/dataset/img_align_celeba
+target_attribute_list:
+- Male
