@@ -96,7 +96,6 @@ def train():
 
         train_loader_tqdm = tqdm(train_loader, desc=f"Epoch {epoch}/{total_epochs}", dynamic_ncols=True, total=num_iterations)
         for step, (images, labels) in enumerate(train_loader_tqdm):
-            print(labels.size())
             if step >= num_iterations:
                 break  # 超过50000个样本后，终止训练
             label_indices = labels.argmax(dim=-1)  # [N, 40, 2] -> [N, 40]
