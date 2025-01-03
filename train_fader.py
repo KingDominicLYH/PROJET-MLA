@@ -76,7 +76,6 @@ writer = SummaryWriter(log_dir=log_dir)
 
 os.makedirs(params.model_output_path, exist_ok=True)
 
-
 def train():
     best_swap_accuracy = 0.0
 
@@ -196,3 +195,7 @@ def train():
             save_path = os.path.join(save_dir, "best_autoencoder.pth")  # 构造保存路径
             torch.save(autoencoder.state_dict(), save_path)  # 保存模型状态字典
             print(f"Best model saved based on Attribute Swap Accuracy to {save_path}.")
+
+if __name__ == "__main__":
+    train()
+    writer.close()  # 关闭 TensorBoard SummaryWriter

@@ -42,6 +42,7 @@ ALL_ATTR:
 batch_size: 32
 image_size: 256
 learning_rate: 0.001
+model_output_path: model
 model_path: classifier_model/best_model.pth
 n_attributes: 1
 preprocess_save_directory: /home/mla/PROJET-MLA/dataset
@@ -50,3 +51,4 @@ raw_attributes_file: /home/mla/PROJET-MLA/dataset/list_attr_celeba.txt
 raw_img_directory: /home/mla/PROJET-MLA/dataset/img_align_celeba
 target_attribute_list:
 - Male
+total_train_samples: 50000
