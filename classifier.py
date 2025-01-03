@@ -144,7 +144,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
             if valid_accuracy > best_valid_accuracy:
                 best_valid_accuracy = valid_accuracy
                 no_improvement_count = 0
-                save_path = os.path.join(params.save_dir, "best_model.pth")
+                save_path = os.path.join(params.save_dir, "best_model_epoch_{epoch+1}.pth")
                 torch.save(model.state_dict(), save_path)
                 print(f"[Epoch {epoch + 1}] Model saved to {save_path} with valid acc {valid_accuracy:.4f}!")
             else:
