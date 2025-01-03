@@ -21,7 +21,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 params = Config(params_dict)
 
 model = Classifier(params).to(device)
-model_path = "best_model.pth"
+model_path = "classifier_model/best_model.pth"
 model.load_state_dict(torch.load(model_path, map_location=device))
 
 # 模型路径和测试数据路径

@@ -14,9 +14,14 @@ from src.tools import CelebADataset, Config
 # Load configuration parameters from the YAML file
 with open("parameter/parameters.yaml", "r") as f:
     params_dict = yaml.safe_load(f)
-
 # 将YAML配置字典转换为Config对象
 params = Config(params_dict)
+
+# Load configuration parameters from the YAML file
+with open("parameter/parameters_classifier.yaml", "r") as f:
+    params_dict_classifier = yaml.safe_load(f)
+# 将YAML配置字典转换为Config对象
+params_classifier = Config(params_dict_classifier)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
@@ -37,8 +42,9 @@ autoencoder = AutoEncoder(params).to(device)
 discriminator = Discriminator(params).to(device)
 
 # Load the pre-trained classifier model
-classifier = Classifier(params).to(device)
-classifier.load_state_dict(torch.load(params.model_path, map_location=device)).eval()
+classifier = Classifier(params_classifier).to(device)
+incompatible_keys = classifier.load_state_dict(torch.load(params.model_path, map_location=device))
+classifier.eval()
 
 # Setup optimizers
 autoencoder_optimizer = optim.Adam(
