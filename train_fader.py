@@ -82,6 +82,9 @@ os.makedirs(params.model_output_path, exist_ok=True)
 
 def train():
     best_swap_accuracy = 0.0
+    save_start_epoch = 150          # 指定从第几个 epoch 开始进行模型保存和 Early-Stopping
+    no_improvement_count = 0  # 记录连续多少个 epoch 未提升
+    patience = 50  # 当验证准确率连续 50 个 epoch 没有提升就提前停止
 
     # 计算每个 epoch 中的迭代次数
     num_iterations = params.total_train_samples // params.batch_size
@@ -153,7 +156,6 @@ def train():
             step_counter += params.batch_size
 
         # 计算 epoch 平均损失
-        print(step)
         avg_recon_loss = total_recon_loss / num_samples
         avg_discriminator_loss = total_discriminator_loss / num_samples
         avg_adversarial_loss = total_adversarial_loss / num_samples
@@ -204,15 +206,27 @@ def train():
         print(f"[Epoch {epoch}/{total_epochs}] Attribute Swap Accuracy: {swap_accuracy:.4f}")
 
         # 定义保存目录
-        save_dir = "train_model"
-        os.makedirs(save_dir, exist_ok=True)  # 如果目录不存在，则创建
+        os.makedirs(params.save_dir, exist_ok=True)  # 如果目录不存在，则创建
 
         # g) 保存模型
-        if swap_accuracy > best_swap_accuracy:  # 如果当前模型的属性替换效果最佳
-            best_swap_accuracy = swap_accuracy
-            save_path = os.path.join(save_dir, "best_autoencoder.pth")  # 构造保存路径
-            torch.save(autoencoder.state_dict(), save_path)  # 保存模型状态字典
-            print(f"Best model saved based on Attribute Swap Accuracy to {save_path}.")
+        if epoch  <= save_start_epoch:
+            # 前 100 个 epoch 只训练，不保存模型，也不进行 early-stopping 统计
+            continue
+        else:
+            if swap_accuracy > best_swap_accuracy:  # 如果当前模型的属性替换效果最佳
+                best_swap_accuracy = swap_accuracy
+                save_path = os.path.join(params.save_dir, "best_autoencoder.pth")  # 构造保存路径
+                torch.save(autoencoder.state_dict(), save_path)  # 保存模型状态字典
+                print(f"Best model saved based on Attribute Swap Accuracy to {save_path}.")
+            else:
+                # 如果验证准确率没有提升，则计数 +1
+                no_improvement_count += 1
+                print(f"[Epoch {epoch + 1}] No improvement. Count {no_improvement_count}/{patience}.")
+
+                # 如果连续 50 个 epoch 无提升，则停止训练
+                if no_improvement_count >= patience:
+                    print("Early stopping triggered!")
+                    break
 
 if __name__ == "__main__":
     train()

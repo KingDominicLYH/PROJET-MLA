@@ -49,7 +49,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
     best_valid_accuracy = 0.0       # 记录历史最佳验证准确率
     patience = 50                   # 当验证准确率连续 50 个 epoch 没有提升就提前停止
     no_improvement_count = 0        # 记录连续多少个 epoch 未提升
-    save_start_epoch = 100          # 指定从第几个 epoch 开始进行模型保存和 Early-Stopping
+    save_start_epoch = 150          # 指定从第几个 epoch 开始进行模型保存和 Early-Stopping
 
     # 计算每个 epoch 的迭代次数（与原逻辑相同）
     num_iterations = params.total_train_samples // params.batch_size

@@ -26,6 +26,7 @@ params = {
     "discriminator_loss_weight": 0,
     "total_train_samples": 50000,
     "total_epochs": 1000,
+    "save_dir": "train_model",
     "batch_size": 32  # 批量大小
 }
 
