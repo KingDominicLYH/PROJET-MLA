@@ -138,7 +138,12 @@ if __name__ == "__main__":
 
         # 拼成一张网格
         # 让每张图占一列 => nrow=n_interpolations
-        grid = make_grid(output_images, nrow=n_interpolations, normalize=True, range=(-1, 1))
+        # （5）可视化：拼成一张网格图并保存
+        # 手动归一化 output_images 到 [0, 1]
+        output_images = (output_images - output_images.min()) / (output_images.max() - output_images.min())
+
+        # 创建图像网格，不使用 range 参数
+        grid = make_grid(output_images, nrow=n_interpolations)
 
         # 保存结果
         save_filename = f"interpolation_{os.path.splitext(img_name)[0]}.png"
