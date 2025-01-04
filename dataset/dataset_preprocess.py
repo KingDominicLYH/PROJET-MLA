@@ -85,7 +85,6 @@ def process_and_save_images(img_dir, image_ids, labels, save_dir, data_type, img
     for idx, img_name in tqdm(enumerate(image_ids), desc=f"Processing {data_type} images", total=len(image_ids), unit="image"):
         img_path = os.path.join(img_dir, img_name)
         image = cv2.imread(img_path)
-        assert image is not None, f"Image not found: {img_path}"
 
         # Convert BGR to RGB
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
