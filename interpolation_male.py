@@ -117,7 +117,8 @@ if __name__ == "__main__":
     for img_name in raw_imgs:
         # 拼接图像路径，如果在同一目录就直接用 img_name
         # 如果需要子目录请自行替换
-        test_img_path = os.path.join(params.raw_img_directory, img_name)
+        test_img_path = r"dataset\img_align_celeba\000007.jpg"
+        # test_img_path = os.path.join(params.raw_img_directory, img_name)
 
         # 检查路径是否正确
         if not os.path.isfile(test_img_path):
