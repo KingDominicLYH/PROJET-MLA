@@ -95,7 +95,7 @@ def generate_attribute_interpolations(
     with torch.no_grad():
         for alpha in alphas:
             # 单属性插值： attribute = [1 - alpha, alpha]
-            attribute = torch.tensor([[1.0 - alpha, alpha]], device=device)
+            attribute = torch.tensor([[1.0 - alpha, alpha]], device=device, dtype=torch.float32)  # 确保 attribute 为 float32
             # 解码
             out = model.decoder(latent, attribute)
             output_images.append(out.cpu())
