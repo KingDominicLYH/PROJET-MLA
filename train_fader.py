@@ -17,6 +17,10 @@ with open("parameter/parameters.yaml", "r") as f:
 # 将YAML配置字典转换为Config对象
 params = Config(params_dict)
 
+attributes_str = "_".join(map(str, params.target_attribute_list))
+save_path = os.path.join(params.save_dir, f"best_autoencoder_{attributes_str}.pth")  # 构造保存路径
+print(save_path)
+
 # Load configuration parameters from the YAML file
 with open("parameter/parameters_classifier.yaml", "r") as f:
     params_dict_classifier = yaml.safe_load(f)
@@ -215,7 +219,10 @@ def train():
         else:
             if swap_accuracy > best_swap_accuracy:  # 如果当前模型的属性替换效果最佳
                 best_swap_accuracy = swap_accuracy
-                save_path = os.path.join(params.save_dir, "best_autoencoder.pth")  # 构造保存路径
+
+                attributes_str = "_".join(map(str, params.target_attribute_list))
+                save_path = os.path.join(params.save_dir, f"best_autoencoder_{attributes_str}.pth")  # 构造保存路径
+
                 torch.save(autoencoder.state_dict(), save_path)  # 保存模型状态字典
                 print(f"Best model saved based on Attribute Swap Accuracy to {save_path}.")
             else:
