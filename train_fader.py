@@ -17,10 +17,6 @@ with open("parameter/parameters.yaml", "r") as f:
 # 将YAML配置字典转换为Config对象
 params = Config(params_dict)
 
-attributes_str = "_".join(map(str, params.target_attribute_list))
-save_path = os.path.join(params.save_dir, f"best_autoencoder_{attributes_str}.pth")  # 构造保存路径
-print(save_path)
-
 # Load configuration parameters from the YAML file
 with open("parameter/parameters_classifier.yaml", "r") as f:
     params_dict_classifier = yaml.safe_load(f)
