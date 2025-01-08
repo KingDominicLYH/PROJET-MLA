@@ -13,14 +13,14 @@ from src.models import AutoEncoder
 
 # ======== 在这里设置您关注的属性、原图列表等 ========
 
-raw_imgs = ["000007.jpg"]  # 这里可以放更多的图名，例如 ["000007.jpg", "000008.jpg", ...]
+raw_imgs = ["000807.jpg"]  # 这里可以放更多的图名，例如 ["000807.jpg", "000008.jpg", ...]
 
 # 从 YAML 里读取训练时的参数，保证一致
 with open("parameter/parameters.yaml", "r") as f:
     params_dict = yaml.safe_load(f)
 
 params = Config(params_dict)  # 将YAML配置字典转换为Config对象
-params.target_attribute_list = ["Male"]
+params.target_attribute_list = ["Wearing_Hat"]
 
 # 1. 加载模型函数
 def load_trained_autoencoder(model_path: str, device: torch.device, params):
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     print(f"Using device: {device}")
 
     # 加载已训练好的模型（请根据实际路径修改）
-    model_path = "train_model/best_autoencoder.pth"
+    model_path = "train_model/best_autoencoder_Wearing_Hat.pth"
     autoencoder = load_trained_autoencoder(model_path, device, params)
 
     # 逐张图像进行插值
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     for img_name in raw_imgs:
         # 拼接图像路径，如果在同一目录就直接用 img_name
         # 如果需要子目录请自行替换
-        test_img_path = r"dataset\img_align_celeba\000007.jpg"
+        test_img_path = r"dataset\img_align_celeba\000807.jpg"
         # test_img_path = os.path.join(params.raw_img_directory, img_name)
 
         # 检查路径是否正确
