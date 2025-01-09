@@ -22,12 +22,12 @@ PROJET-MLA is a replication project based on the **Fader Network** model, which 
    ```bash
    python dataset_preprocess.py
 
-2. **Train the Classifier**
+2. **Train the Classifier**: Train a classifier to evaluate specific attributes in the dataset. This is useful for monitoring attribute invariance during adversarial training.
 
    ```bash
    python classifier.py 
 
-3. **Train the Model**: 
+3. **Train the Model**: Train the Fader Network using the preprocessed dataset. This step involves both adversarial training and reconstruction of the input images.
 
    ```bash
    python train_fader.py 
