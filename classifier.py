@@ -11,26 +11,26 @@ from tqdm import tqdm
 from src.models import Classifier
 from src.tools import CelebADataset, Config, get_optimizer
 
-# 加载YAML配置
+# Load YAML configuration
 with open("parameter/parameters_classifier.yaml", "r") as f:
     params_dict = yaml.safe_load(f)
 params = Config(params_dict)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# 数据加载
+# Data loading
 train_dataset = CelebADataset(data_dir=params.processed_file, params=params, split="train")
 valid_dataset = CelebADataset(data_dir=params.processed_file, params=params, split="val")
 
 train_loader = DataLoader(train_dataset, batch_size=params.batch_size, shuffle=True, pin_memory=True)
 valid_loader = DataLoader(valid_dataset, batch_size=params.batch_size, shuffle=False, pin_memory=True)
 
-# 模型、损失函数和优化器
+# Model, loss function, and optimizer
 model = Classifier(params).to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = get_optimizer(model, params.optimizer)
 
-# 获取当前时间戳并格式化为文件夹名称
+# Get the current timestamp and format it as a folder name
 current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 log_dir = f'Tensorboard/{current_time}'
 if not os.path.exists(log_dir):
@@ -41,24 +41,25 @@ writer = SummaryWriter(log_dir=log_dir)
 
 def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, device):
     """
-    训练函数：前100个epoch不保存模型；
-            从第101个epoch开始使用 Early-Stopping（基于验证准确率）。
+    Training function:
+    - First 100 epochs do not save the model.
+    - From epoch 101 onwards, Early-Stopping is applied (based on validation accuracy).
     """
 
-    # ========= 新增：Early-Stopping 所需变量 =========
-    best_valid_accuracy = 0.0       # 记录历史最佳验证准确率
-    patience = 50                   # 当验证准确率连续 50 个 epoch 没有提升就提前停止
-    no_improvement_count = 0        # 记录连续多少个 epoch 未提升
-    save_start_epoch = 150          # 指定从第几个 epoch 开始进行模型保存和 Early-Stopping
+    # ====== Variables for Early-Stopping ======
+    best_valid_accuracy = 0.0  # Track the best validation accuracy
+    patience = 50  # Stop training if validation accuracy does not improve for 50 epochs
+    no_improvement_count = 0  # Counter for epochs with no improvement
+    save_start_epoch = 150  # Start saving models and applying Early-Stopping after epoch 150
 
-    # 计算每个 epoch 的迭代次数（与原逻辑相同）
+    # Compute the number of iterations per epoch
     num_iterations = params.total_train_samples // params.batch_size
     num_valid_iterations = params.total_valid_samples // params.batch_size
 
     for epoch in range(n_epochs):
         print(f'Starting Epoch {epoch + 1}/{n_epochs}')
 
-        # ======= 训练阶段 =======
+        # ====== Training Phase ======
         model.train()
         train_loss = 0.0
         correct_predictions = 0
@@ -70,7 +71,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
 
         for i, (inputs, labels) in enumerate(train_loader_tqdm):
             if i >= num_iterations:
-                break  # 超过指定的训练样本数量后跳出
+                break  # Stop training after reaching the specified number of training samples
             label_indices = labels.argmax(dim=-1)
             inputs, label_indices = inputs.to(device), label_indices.to(device)
 
@@ -91,7 +92,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
         train_loss /= num_samples
         train_accuracy = correct_predictions / total_predictions
 
-        # ======= 验证阶段 =======
+        # ====== Validation Phase ======
         model.eval()
         valid_loss = 0.0
         correct_predictions = 0
@@ -119,44 +120,44 @@ def train(model, train_loader, valid_loader, criterion, optimizer, n_epochs, dev
         valid_loss /= num_samples
         valid_accuracy = correct_predictions / total_predictions
 
-        # ====== 打印本轮训练与验证信息 ======
+        # ====== Print training and validation metrics ======
         print(f'Epoch {epoch + 1}/{n_epochs}')
         print(f'Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.4f}')
         print(f'Valid Loss: {valid_loss:.4f}, Valid Accuracy: {valid_accuracy:.4f}')
 
-        # 写入 TensorBoard
+        # Write metrics to TensorBoard
         writer.add_scalar('Train Loss', train_loss, epoch)
         writer.add_scalar('Train Accuracy', train_accuracy, epoch)
         writer.add_scalar('Valid Loss', valid_loss, epoch)
         writer.add_scalar('Valid Accuracy', valid_accuracy, epoch)
 
-        # ====== 如果保存目录不存在则创建 ======
+        # ====== Ensure the save directory exists ======
         if not os.path.exists(params.save_dir):
             os.makedirs(params.save_dir)
             print(f"Directory {params.save_dir} created.")
 
-        # =========== 关键逻辑：前100个epoch不保存模型，从第101个epoch开始Early-Stopping ===========
+        # ====== Early-Stopping logic (starting from epoch 101) ======
         if epoch + 1 <= save_start_epoch:
-            # 前 100 个 epoch 只训练，不保存模型，也不进行 early-stopping 统计
+            # Do not save models or apply Early-Stopping in the first 100 epochs
             continue
         else:
-            # 只有当验证准确率比之前的最优值更高时，才保存模型并归零 no_improvement_count
+            # Save the model only if validation accuracy improves
             if valid_accuracy > best_valid_accuracy:
                 best_valid_accuracy = valid_accuracy
                 no_improvement_count = 0
-                save_path = os.path.join(params.save_dir, "best_model_epoch_{epoch+1}.pth")
+                save_path = os.path.join(params.save_dir, f"best_model_epoch_{epoch+1}.pth")
                 torch.save(model.state_dict(), save_path)
                 print(f"[Epoch {epoch + 1}] Model saved to {save_path} with valid acc {valid_accuracy:.4f}!")
             else:
-                # 如果验证准确率没有提升，则计数 +1
+                # If validation accuracy does not improve, increase the counter
                 no_improvement_count += 1
                 print(f"[Epoch {epoch + 1}] No improvement. Count {no_improvement_count}/{patience}.")
 
-                # 如果连续 50 个 epoch 无提升，则停止训练
+                # Stop training if no improvement for 50 consecutive epochs
                 if no_improvement_count >= patience:
                     print("Early stopping triggered!")
                     break
 
 
-# 运行训练
+# Run training
 train(model, train_loader, valid_loader, criterion, optimizer, params.total_epochs, device)
