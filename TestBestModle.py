@@ -8,84 +8,78 @@ import yaml
 
 
 # ========================
-# 配置和初始化
+# Configuration and Initialization
 # ========================
-# 加载配置文件
+# Load configuration file
 config_file = "parameter/parameters_test.yaml"
 with open(config_file, "r") as f:
     params_dict = yaml.safe_load(f)
 
-# 加载设备
+# Load device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 params = Config(params_dict)
 
+# Initialize the classifier model
 model = Classifier(params).to(device)
 model_path = "classifier_model/best_model.pth"
 model.load_state_dict(torch.load(model_path, map_location=device))
 
-# 模型路径和测试数据路径
-
+# Path to test dataset
 test_data_path = params.preprocess_save_directory + "/test_dataset.pth"
 
-# 属性名称（从配置中获取或指定）
-attribute_names = params.target_attribute_list  # 目标属性名称列表
-
+# Attribute names (retrieved from config)
+attribute_names = params.target_attribute_list  # List of target attribute names
 
 
 # ========================
-# 加载分类器模型
+# Load Test Data
 # ========================
-# 加载模型
-
-# ========================
-# 加载测试数据
-# ========================
-# 从 test_dataset.pth 文件加载数据
-test_data = torch.load(test_data_path)  # 包含图像和标签
+# Load data from test_dataset.pth file
+test_data = torch.load(test_data_path)  # Contains images and labels
 images, labels = test_data["images"], test_data["labels"]
 
-# 随机选取 20 张图片及其对应的标签
+# Randomly select 20 images and their corresponding labels
 indices = random.sample(range(len(images)), 20)
 sampled_images = images[indices]
 sampled_labels = labels[indices]
 
 # ========================
-# 模型预测
+# Model Predictions
 # ========================
-# 将图片和标签移至设备
+# Move images and labels to the device
 sampled_images = sampled_images.to(device)
 sampled_labels = sampled_labels.to(device)
 
-# 模型预测
-outputs = model(sampled_images)  # 模型输出 (batch_size, n_attributes, num_classes)
-predictions = torch.argmax(outputs, dim=-1)  # 获取每个属性的预测类别
-true_labels = torch.argmax(sampled_labels, dim=-1)  # 将独热编码标签转换为整数类别
+# Perform model predictions
+outputs = model(sampled_images)  # Model output (batch_size, n_attributes, num_classes)
+predictions = torch.argmax(outputs, dim=-1)  # Get predicted class for each attribute
+true_labels = torch.argmax(sampled_labels, dim=-1)  # Convert one-hot encoded labels to integers
 
 # ========================
-# 准确率计算
+# Accuracy Calculation
 # ========================
-# 计算每个属性的准确率
+# Compute accuracy for each attribute
 attribute_accuracies = []
 for attr_idx, attr_name in enumerate(attribute_names):
     acc = accuracy_score(true_labels[:, attr_idx].cpu(), predictions[:, attr_idx].cpu())
     attribute_accuracies.append((attr_name, acc))
     print(f"Accuracy for {attr_name}: {acc:.4f}")
 
-# 平均准确率
+# Compute mean accuracy across attributes
 mean_accuracy = sum([acc for _, acc in attribute_accuracies]) / len(attribute_accuracies)
 print(f"Mean Accuracy: {mean_accuracy:.4f}")
 
 # ========================
-# 可视化部分结果
+# Visualization of Predictions
 # ========================
-# 可视化选取的 20 张图片及其预测
+# Visualize 20 randomly selected images along with their predictions
 for i in range(20):
-    image = sampled_images[i].permute(1, 2, 0).cpu().numpy()  # 转为 HWC 格式
+    image = sampled_images[i].permute(1, 2, 0).cpu().numpy()  # Convert to HWC format
     predicted_attrs = [attribute_names[j] for j in range(len(attribute_names)) if predictions[i, j] == 1]
     true_attrs = [attribute_names[j] for j in range(len(attribute_names)) if true_labels[i, j] == 1]
 
-    # 显示图片及预测结果
+    # Display image and predictions
     plt.imshow(image)
     plt.axis('off')
     plt.title(f"Predicted: {', '.join(predicted_attrs)}\nTrue: {', '.join(true_attrs)}")
