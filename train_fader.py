@@ -14,13 +14,11 @@ from src.tools import CelebADataset, Config
 # Load configuration parameters from the YAML file
 with open("parameter/parameters.yaml", "r") as f:
     params_dict = yaml.safe_load(f)
-# 将YAML配置字典转换为Config对象
 params = Config(params_dict)
 
-# Load configuration parameters from the YAML file
+# Load classifier configuration parameters from the YAML file
 with open("parameter/parameters_classifier.yaml", "r") as f:
     params_dict_classifier = yaml.safe_load(f)
-# 将YAML配置字典转换为Config对象
 params_classifier = Config(params_dict_classifier)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -67,28 +65,28 @@ discriminator_optimizer = optim.Adam(
 reconstruction_criterion = nn.MSELoss()
 classification_criterion = nn.CrossEntropyLoss()
 
-# 获取当前时间戳并格式化为文件夹名称
+# Get the current timestamp and format it as a folder name
 current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-log_dir = f'Tensorboard/train_{current_time}'  # 动态生成 TensorBoard 日志目录
+log_dir = f'Tensorboard/train_{current_time}'  # Dynamically generate TensorBoard log directory
 
-# 检查并创建目录
-os.makedirs(log_dir, exist_ok=True)  # 如果目录不存在，则创建
+# Check and create directory
+os.makedirs(log_dir, exist_ok=True)  # Create directory if it doesn't exist
 print(f"TensorBoard logs saving to: {log_dir}")
 
-# 初始化 TensorBoard 的 SummaryWriter
+# Initialize TensorBoard SummaryWriter
 writer = SummaryWriter(log_dir=log_dir)
 
 os.makedirs(params.model_output_path, exist_ok=True)
 
 def train():
     best_swap_accuracy = 0.0
-    save_start_epoch = 150          # 指定从第几个 epoch 开始进行模型保存和 Early-Stopping
-    no_improvement_count = 0  # 记录连续多少个 epoch 未提升
-    patience = 50  # 当验证准确率连续 50 个 epoch 没有提升就提前停止
+    save_start_epoch = 150  # Start saving models and applying early stopping from this epoch
+    no_improvement_count = 0  # Counter for consecutive epochs without improvement
+    patience = 50  # Stop training if validation accuracy does not improve for 50 epochs
 
-    # 计算每个 epoch 中的迭代次数
+    # Compute number of iterations per epoch
     num_iterations = params.total_train_samples // params.batch_size
-    step_counter = 0  # 用于记录当前训练步数
+    step_counter = 0  # Track the current training step
 
     total_epochs = params.total_epochs
     for epoch in range(1, total_epochs + 1):
@@ -96,7 +94,7 @@ def train():
         autoencoder.train()
         discriminator.train()
 
-        # 初始化用于统计的变量
+        # Initialize tracking variables
         total_recon_loss = 0.0
         total_discriminator_loss = 0.0
         total_adversarial_loss = 0.0
@@ -105,18 +103,18 @@ def train():
         train_loader_tqdm = tqdm(train_loader, desc=f"Epoch {epoch}/{total_epochs}", dynamic_ncols=True, total=num_iterations)
         for step, (images, labels) in enumerate(train_loader_tqdm):
             if step >= num_iterations:
-                break  # 超过50000个样本后，终止训练
+                break  # Stop training after reaching 50000 samples
             label_indices = labels.argmax(dim=-1)  # [N, 40, 2] -> [N, 40]
             images, labels, label_indices = images.to(device), labels.to(device), label_indices.to(device)
 
-            # 动态调整 discriminator_loss_weight
+            # Dynamically adjust discriminator_loss_weight
             max_steps = 500000
             params.latent_discriminator_loss_weight = min(
-                0.001,  # 最大值
-                (step_counter / max_steps) * 0.001  # 按比例增长
+                0.001,  # Maximum value
+                (step_counter / max_steps) * 0.001  # Gradually increase
             )
 
-            # (i) 训练判别器
+            # (i) Train discriminator
             latent = autoencoder.encoder(images)
             pred_labels_real = discriminator(latent.detach())
             loss_discriminator = classification_criterion(pred_labels_real.permute(0, 2, 1), label_indices)
@@ -125,12 +123,12 @@ def train():
             loss_discriminator.backward()
             discriminator_optimizer.step()
 
-            # (ii) 训练自编码器
+            # (ii) Train autoencoder
             latent = autoencoder.encoder(images)
             reconstructed_images = autoencoder.decoder(latent, labels)
             recon_loss = reconstruction_criterion(reconstructed_images, images)
 
-            # 翻转标签 => 1 - labels
+            # Flip labels => 1 - labels
             pred_labels_fake = discriminator(latent)
             adversarial_loss = classification_criterion(pred_labels_fake.permute(0, 2, 1), 1 - label_indices)
 
@@ -140,13 +138,13 @@ def train():
             ae_loss.backward()
             autoencoder_optimizer.step()
 
-            # 累加每个 step 的损失
+            # Accumulate losses
             total_recon_loss += recon_loss.item() * params.batch_size
             total_discriminator_loss += loss_discriminator.item() * params.batch_size
             total_adversarial_loss += adversarial_loss.item() * params.batch_size
             num_samples += params.batch_size
 
-            # (iii) 日志 & 进度条
+            # Log and update progress bar
             train_loader_tqdm.set_postfix({
                 "Recon": recon_loss.item(),
                 "D_loss": loss_discriminator.item(),
@@ -155,82 +153,66 @@ def train():
 
             step_counter += params.batch_size
 
-        # 计算 epoch 平均损失
+        # Compute average losses per epoch
         avg_recon_loss = total_recon_loss / num_samples
         avg_discriminator_loss = total_discriminator_loss / num_samples
         avg_adversarial_loss = total_adversarial_loss / num_samples
 
-        # 记录到 TensorBoard
+        # Log metrics to TensorBoard
         writer.add_scalar("Epoch_Avg_Reconstruction_Loss", avg_recon_loss, epoch)
         writer.add_scalar("Epoch_Avg_Discriminator_Loss", avg_discriminator_loss, epoch)
         writer.add_scalar("Epoch_Avg_Adversarial_Loss", avg_adversarial_loss, epoch)
 
-        # f) 验证
+        # Validate model
         autoencoder.eval()
-        classifier.eval()  # 验证属性替换时需要分类器
-        # total_val_loss = 0.0
+        classifier.eval()
+
         swap_accuracy = 0.0
         num_samples = 0
 
-
         with torch.no_grad():
             for images, labels in valid_loader:
-                # 将数据移动到设备
                 images, labels = images.to(device), labels.to(device)
 
-                # 替换属性（例如：切换第 i 个属性，假设属性为“眼镜”）
-                # 从 [32, 1, 2] 转换为 [32, 1]，得到单个类别索引（0 或 1）
-                modified_labels = labels.clone()  # [32, 1, 2]
-                modified_labels[:, :, 0], modified_labels[:, :, 1] = modified_labels[:, :, 1], modified_labels[:, :,0].clone()
+                # Modify attributes (e.g., toggle glasses attribute)
+                modified_labels = labels.clone()
+                modified_labels[:, :, 0], modified_labels[:, :, 1] = modified_labels[:, :, 1], modified_labels[:, :, 0].clone()
 
                 swapped_images = autoencoder(images, modified_labels)
+                modified_labels = modified_labels.argmax(dim=2)
 
-                modified_labels = modified_labels.argmax(dim=2)  # [32, 1]
+                predicted_labels = classifier(swapped_images).argmax(dim=2)
+                target_predicted_labels = predicted_labels[:, target_attribute_indices]
 
-                # 使用分类器验证生成图像是否符合修改后的属性
-                predicted_labels = classifier(swapped_images).argmax(dim=2)  # 分类器输出形状为 [batch_size, n_attributes, 2]
-                target_predicted_labels = predicted_labels[:, target_attribute_indices]  # 只保留目标属性的预测值
-
-                # 计算属性替换的准确性
                 swap_accuracy += (target_predicted_labels == modified_labels).sum().item()
-
                 num_samples += images.size(0)
 
-        # 属性替换准确率
-        swap_accuracy = swap_accuracy / num_samples
-
-        # 使用 TensorBoard 记录验证指标
+        swap_accuracy /= num_samples
         writer.add_scalar("Validation/Attribute_Swap_Accuracy", swap_accuracy, epoch)
 
-        # 打印验证结果
         print(f"[Epoch {epoch}/{total_epochs}] Attribute Swap Accuracy: {swap_accuracy:.4f}")
 
-        # 定义保存目录
-        os.makedirs(params.save_dir, exist_ok=True)  # 如果目录不存在，则创建
+        os.makedirs(params.save_dir, exist_ok=True)
 
-        # g) 保存模型
-        if epoch  <= save_start_epoch:
-            # 前 100 个 epoch 只训练，不保存模型，也不进行 early-stopping 统计
+        # Save model
+        if epoch <= save_start_epoch:
             continue
         else:
-            if swap_accuracy > best_swap_accuracy:  # 如果当前模型的属性替换效果最佳
+            if swap_accuracy > best_swap_accuracy:
                 best_swap_accuracy = swap_accuracy
-
                 attributes_str = "_".join(map(str, params.target_attribute_list))
-                save_path = os.path.join(params.save_dir, f"best_autoencoder_{attributes_str}.pth")  # 构造保存路径
+                save_path = os.path.join(params.save_dir, f"best_autoencoder_{attributes_str}.pth")
 
-                torch.save(autoencoder.state_dict(), save_path)  # 保存模型状态字典
+                torch.save(autoencoder.state_dict(), save_path)
                 print(f"Best model saved based on Attribute Swap Accuracy to {save_path}.")
             else:
-                # 如果验证准确率没有提升，则计数 +1
                 no_improvement_count += 1
                 print(f"[Epoch {epoch + 1}] No improvement. Count {no_improvement_count}/{patience}.")
 
-                # 如果连续 50 个 epoch 无提升，则停止训练
                 if no_improvement_count >= patience:
                     print("Early stopping triggered!")
                     break
 
 if __name__ == "__main__":
     train()
-    writer.close()  # 关闭 TensorBoard SummaryWriter
+    writer.close()
