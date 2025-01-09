@@ -26,16 +26,16 @@ subset_train_size = params["samples_train_per_epoch"]  # Number of samples per e
 subset_val_size = params["samples_val_per_epoch"]  # Number of validation samples
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # Use GPU if available
 
-# 每轮训练动态采样
+# Dynamic sampling per round of training
 def get_random_subset_loader(dataset, batch_size, subset_size):
     """
     Creates a DataLoader with a random subset of the dataset.
     """
-    # 随机生成子集索引
+    # Randomly generate subset indexes
     indices = torch.randperm(len(dataset))[:subset_size]
     sampler = SubsetRandomSampler(indices)
 
-    # 创建 DataLoader
+    # Create DataLoader
     loader = DataLoader(dataset, batch_size=batch_size, sampler=sampler, num_workers=4)
     return loader
 
