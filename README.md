@@ -3,6 +3,7 @@
 ## **Description**
 PROJET-MLA is a replication project based on the **Fader Network** model, which focuses on attribute manipulation for images. The goal is to modify specific attributes (e.g., gender, smile) while preserving the overall content of the image. This project involves data preprocessing, model implementation, training, and evaluation.
 
+![](images/Attribut_Male.png)
 
 
 ---
@@ -21,7 +22,7 @@ PROJET-MLA is a replication project based on the **Fader Network** model, which 
    ```bash
    python dataset_preprocess.py
 
-2. **Train the classifier**
+2. **Train the Classifier**
 
    ```bash
    python classifier.py 
