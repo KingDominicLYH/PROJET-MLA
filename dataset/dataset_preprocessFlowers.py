@@ -107,19 +107,19 @@ def process_and_save_images(img_dir, image_ids, labels, save_dir, data_type, img
     torch.save(data, save_path)
     print(f"{data_type} dataset saved at {save_path}")
 
-# 加载YAML配置
+# Load YAML configuration
 with open("parameter/parameters.yaml", "r") as f:
     params_dict = yaml.safe_load(f)
 
-# 将YAML配置字典转换为Config对象
+# Convert the YAML configuration dictionary into a Config object
 params = Config(params_dict)
 
-img_directory = params.raw_img_directory          # 图像文件夹路径
-attributes_file = params.raw_attributes_file  # 属性文件路径
-save_directory = params.preprocess_save_directory           # 处理后数据保存路径
-image_size = params.image_size                          # 图像调整大小，默认为256
+img_directory = params.raw_img_directory          # Path to the image directory
+attributes_file = params.raw_attributes_file      # Path to the attributes file
+save_directory = params.preprocess_save_directory # Directory to save processed data
+image_size = params.image_size                    # Target size for resized images (default: 256)
 
-# 调用处理函数
+# Call the processing function
 preprocess_and_save_dataset(img_directory, attributes_file, save_directory, image_size)
 
 
