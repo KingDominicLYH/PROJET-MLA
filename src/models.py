@@ -2,44 +2,39 @@ import torch
 from torch import nn
 
 class Encoder(nn.Module):
-    """
-    Encoder module: Compresses an input image into a latent representation.
-    """
-
     def __init__(self, params):
         super(Encoder, self).__init__()
-
         self.layers = nn.Sequential(
-            # Layer 1
-            nn.Conv2d(3, 16, kernel_size=4, stride=2, padding=1),  # 输入通道：3（RGB），输出通道：16
+            # Layer 1: Input channels = 3 (RGB), Output channels = 16
+            nn.Conv2d(3, 16, kernel_size=4, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
 
-            # Layer 2
+            # Layer 2: 16 -> 32
             nn.Conv2d(16, 32, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(32),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
 
-            # Layer 3
+            # Layer 3: 32 -> 64
             nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(64),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
 
-            # Layer 4
+            # Layer 4: 64 -> 128
             nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(128),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
 
-            # Layer 5
+            # Layer 5: 128 -> 256
             nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(256),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
 
-            # Layer 6
+            # Layer 6: 256 -> 512
             nn.Conv2d(256, 512, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
 
-            # Layer 7
+            # Layer 7: 512 -> 512
             nn.Conv2d(512, 512, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(negative_slope=0.2, inplace=True)
@@ -49,98 +44,88 @@ class Encoder(nn.Module):
         return self.layers(x)
 
 class Decoder(nn.Module):
-    """
-    Decoder module: Reconstructs an image from a latent representation and attributes.
-    """
-
     def __init__(self, params):
         super(Decoder, self).__init__()
         self.params = params
         self.n_attributes = params.n_attributes
-        self.attribute_channels = 2 * self.n_attributes # Each attribute is represented as [1, 0] or [0, 1]
+        self.attribute_channels = 2 * self.n_attributes
 
-        # Define each group of ConvTranspose2d, BatchNorm2d, and Activation as a sequence
         self.layers = nn.ModuleList([
-            # Layer 1
             nn.Sequential(
                 nn.ConvTranspose2d(512 + self.attribute_channels, 512, kernel_size=4, stride=2, padding=1),
                 nn.BatchNorm2d(512),
                 nn.ReLU(inplace=True)
             ),
-
-            # Layer 2
             nn.Sequential(
                 nn.ConvTranspose2d(512 + self.attribute_channels, 256, kernel_size=4, stride=2, padding=1),
                 nn.BatchNorm2d(256),
                 nn.ReLU(inplace=True)
             ),
-
-            # Layer 3
             nn.Sequential(
                 nn.ConvTranspose2d(256 + self.attribute_channels, 128, kernel_size=4, stride=2, padding=1),
                 nn.BatchNorm2d(128),
                 nn.ReLU(inplace=True)
             ),
-
-            # Layer 4
             nn.Sequential(
                 nn.ConvTranspose2d(128 + self.attribute_channels, 64, kernel_size=4, stride=2, padding=1),
                 nn.BatchNorm2d(64),
                 nn.ReLU(inplace=True)
             ),
-
-            # Layer 5
             nn.Sequential(
                 nn.ConvTranspose2d(64 + self.attribute_channels, 32, kernel_size=4, stride=2, padding=1),
                 nn.BatchNorm2d(32),
                 nn.ReLU(inplace=True)
             ),
-
-            # Layer 6
             nn.Sequential(
                 nn.ConvTranspose2d(32 + self.attribute_channels, 16, kernel_size=4, stride=2, padding=1),
                 nn.BatchNorm2d(16),
                 nn.ReLU(inplace=True)
             ),
-
-            # Layer 7
             nn.Sequential(
                 nn.ConvTranspose2d(16 + self.attribute_channels, 3, kernel_size=4, stride=2, padding=1),
-                nn.Tanh()  # Output normalized to the range [-1, 1]
+                nn.Tanh()
             )
         ])
 
     def forward(self, z, attributes):
-        """
-        Forward pass through the decoder.
+    # Extract the batch size and spatial dimensions (height, width) from z
+    # batch_size: number of images in a batch
+    # _: the channel dimension (not used explicitly here)
+    # h, w: current spatial height and width of z
+    batch_size, _, h, w = z.shape
 
-        Parameters:
-        z: Latent representation from the encoder (shape: [batch_size, 512, 2, 2])
-        attributes: Attribute vector (shape: [batch_size, n_attributes]), one-hot encoded
-        """
-        # Expand attribute vector to match spatial dimensions of the latent representation
-        batch_size, _, h, w = z.shape
+    # Reshape attributes from [batch_size, n_attributes] to [batch_size, n_attributes*2, 1, 1]
+    # so it can be broadcast (expanded) across the spatial dimensions.
+    # 'n_attributes * 2' corresponds to the one-hot representation (e.g., [1,0] or [0,1]) for each attribute.
+    attributes = attributes.reshape(batch_size, -1, 1, 1)
 
-        attributes = attributes.reshape(batch_size, -1, 1, 1)  # [batch_size, 2n, 1, 1]
-        attributes = attributes.expand(batch_size, -1, h, w)  # [batch_size, 2n, h, w]
+    # Expand attributes along the height and width dimensions so that they match (h, w) of z.
+    # The result will have shape [batch_size, n_attributes*2, h, w].
+    attributes = attributes.expand(batch_size, -1, h, w)
 
-        # 拼接前打印 z 和 attributes 的通道数
-        x = z
+    # Initialize x with the latent representation z before proceeding through the decoder layers.
+    x = z
 
-        # Decode through each sequence
-        for layer in self.layers:
-            _, _, h, w = x.shape
-            # Concatenate attributes before each ConvTranspose2d layer
-            attributes_resized = nn.functional.interpolate(attributes, size=(h, w), mode="nearest")
-            x = torch.cat([x, attributes_resized], dim=1)
-            x = layer(x)  # Pass through the sequence (ConvTranspose2d + BatchNorm + Activation)
+    # Iterate through each transposed convolution layer in the decoder.
+    for layer in self.layers:
+        # Get the current spatial size of x to know how to resize the attributes.
+        _, _, h, w = x.shape
 
-        return x
+        # Resize the attribute tensor to the current spatial dimensions (h, w) of x
+        # (if those dimensions have changed from the previous layer).
+        attributes_resized = nn.functional.interpolate(attributes, size=(h, w), mode="nearest")
+
+        # Concatenate the resized attributes along the channel dimension (dim=1).
+        # This provides attribute information to the decoder at every layer.
+        x = torch.cat([x, attributes_resized], dim=1)
+
+        # Pass the concatenated tensor through the current layer (ConvTranspose2d + optional BatchNorm + ReLU/Tanh).
+        x = layer(x)
+
+    # Return the final output, which should be a reconstructed image with channels = 3 (RGB).
+    return x
 
 class AutoEncoder(nn.Module):
-    """
-    Full AutoEncoder: Combines the Encoder and Decoder.
-    """
     def __init__(self, params):
         super(AutoEncoder, self).__init__()
         self.params = params
@@ -155,10 +140,6 @@ class AutoEncoder(nn.Module):
         return output
 
 class Discriminator(nn.Module):
-    """
-    Discriminator: Combines convolutional layers and fully connected layers into a single Sequential module.
-    Includes Dropout as per the paper's requirements.
-    """
     def __init__(self, params):
         super(Discriminator, self).__init__()
         self.params = params
@@ -201,58 +182,73 @@ class Discriminator(nn.Module):
         return x
 
 class Classifier(nn.Module):
+    """
+    The Classifier predicts attribute values directly from an input image.
+
+    This network consists of multiple convolutional layers followed by a fully 
+    connected block. The output shape is [batch_size, n_attributes, 2], indicating 
+    a binary classification for each attribute.
+    """
     def __init__(self, params):
+
         super(Classifier, self).__init__()
 
-        # 卷积层部分 (C16到C512, 七层卷积)
+        # Convolutional layers (8 layers in total), each halving the spatial resolution
+        # and increasing or preserving the number of feature channels.
         self.conv_layers = nn.Sequential(
-            nn.Conv2d(3, 16, kernel_size=4, stride=2, padding=1),  # C16
+            # Layer 1: 3 -> 16
+            nn.Conv2d(3, 16, kernel_size=4, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
 
-            nn.Conv2d(16, 32, kernel_size=4, stride=2, padding=1),  # C32
+            # Layer 2: 16 -> 32
+            nn.Conv2d(16, 32, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(32),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
 
-            nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1),  # C64
+            # Layer 3: 32 -> 64
+            nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(64),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
 
-            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),  # C128
+            # Layer 4: 64 -> 128
+            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(128),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
 
-            nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),  # C256
+            # Layer 5: 128 -> 256
+            nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(256),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
 
-            nn.Conv2d(256, 512, kernel_size=4, stride=2, padding=1),  # C512
+            # Layer 6: 256 -> 512
+            nn.Conv2d(256, 512, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
 
-            # 额外一层卷积
-            nn.Conv2d(512, 512, kernel_size=4, stride=2, padding=1),  # C512
+            # Layer 7: 512 -> 512
+            nn.Conv2d(512, 512, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
 
-            # 额外一层卷积
-            nn.Conv2d(512, 512, kernel_size=4, stride=2, padding=1),  # C512
+            # Layer 8: 512 -> 512
+            nn.Conv2d(512, 512, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
         )
 
-        # Flatten layer
-        self.flatten = nn.Flatten()  # Automatically flatten to [batch_size, 512 * 1 * 1]
+        # Flatten operation to prepare for the fully connected layers
+        self.flatten = nn.Flatten()
 
-        # 全连接层部分
+        # Fully connected layers for classification
         self.fc_layers = nn.Sequential(
-            nn.Linear(512 * 1 * 1, 512),  # 扁平化后连接到512维
+            nn.Linear(512 * 1 * 1, 512),  # Connect the flattened features (512) to a 512-dimensional layer
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.Dropout(0.3),  # Dropout applied with a rate of 0.3
-            nn.Linear(512, params.n_attributes * 2),  # 输出2类，假设是二分类问题
+            nn.Dropout(0.3),              # Dropout for regularization
+            nn.Linear(512, params.n_attributes * 2),  # 2 outputs (binary classification) per attribute
         )
 
     def forward(self, x):
-        x = self.conv_layers(x)  # 通过卷积层
+        x = self.conv_layers(x)
         x = self.flatten(x)
-        x = self.fc_layers(x)  # 通过全连接层
-        return x.view(x.size(0), -1, 2)  # 调整输出形状为 [N, 40, 2]
+        x = self.fc_layers(x)
+        return x.view(x.size(0), -1, 2)
