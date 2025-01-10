@@ -18,7 +18,7 @@ class CelebADataset(Dataset):
         :param transform: Optional image transformations
         :param params: Parameters dictionary passed from the main program
         """
-        # 根据 split 动态选择处理后的文件
+        # Sélection dynamique du fichier traité en fonction du split
         processed_file = self._get_processed_file(data_dir, split)
         print(f"Loading processed dataset from {processed_file}...")
 
@@ -26,7 +26,7 @@ class CelebADataset(Dataset):
         self.images = data["images"]
 
         # Get the list of attributes to consider
-        attribute_list = params.target_attribute_list  # 直接使用简单列表
+        attribute_list = params.target_attribute_list  # Utiliser directement une liste simple
 
         all_attr = params.ALL_ATTR
 
@@ -41,14 +41,14 @@ class CelebADataset(Dataset):
                 raise ValueError("Attribute list or ALL_ATTR is missing in params")
 
         self.transform = transform
-        self.enable_flip = enable_flip  # 新增的参数，用于控制水平翻转是否启用
+        self.enable_flip = enable_flip  # Paramètre ajouté, utilisé pour contrôler l'activation de la symétrie horizontale
 
     def _get_processed_file(self, base_dir, split):
         """
-        根据 split 返回对应的处理文件路径
-        :param base_dir: 存储处理后数据的基本路径
-        :param split: 数据集分割（train, val, test）
-        :return: 对应的文件路径
+        Retourne le chemin du fichier traité en fonction du split
+        :param base_dir: Chemin de base où sont stockées les données traitées
+        :param split: Fraction du jeu de données (train, val, test)
+        :return: Chemin du fichier correspondant
         """
         file_map = {
             "train": "train_dataset.pth",
@@ -72,11 +72,12 @@ class CelebADataset(Dataset):
         image = self.images[idx]
         label = self.labels[idx]
 
-        # Ensure the image is in float type and normalized to [0, 1]
-        image = normalize_images(image)  # Normalize to [0, 1]
+        # Assurer que l'image est de type float et normalisée dans l'intervalle [0, 1]
+        image = normalize_images(image)
 
-        if self.enable_flip and random.random() < 0.5:  # 50% 概率翻转
-            image = torch.flip(image, dims=[2])  # 水平翻转
+        # Applique une symétrie horizontale avec une probabilité de 50%
+        if self.enable_flip and random.random() < 0.5:
+            image = torch.flip(image, dims=[2])
 
         if self.transform:
             image = self.transform(image)
@@ -86,33 +87,34 @@ class CelebADataset(Dataset):
     @staticmethod
     def one_hot_encode(labels, num_classes=2):
         """
-        Perform one-hot encoding for labels and return a 3D tensor.
-        :param labels: Input label tensor of shape (N, num_attributes).
-        :param num_classes: Number of classes per attribute (default: 2 for binary).
-        :return: One-hot encoded 3D tensor of shape (N, num_attributes, num_classes).
+        Effectue un one-hot encoding des étiquettes et retourne un tenseur 3D.
+        :param labels: Tenseur d'étiquettes de forme (N, num_attributes).
+        :param num_classes: Nombre de classes par attribut (défaut : 2 pour binaire).
+        :return: Tenseur one-hot encodé de forme (N, num_attributes, num_classes).
         """
         batch_size, num_attrs = labels.size()
         one_hot_labels = torch.zeros(batch_size, num_attrs, num_classes, dtype=torch.float32)
         one_hot_labels.scatter_(-1, labels.long().unsqueeze(-1), 1.0)
         return one_hot_labels
 
+
 class Config:
     def __init__(self, config_dict):
         for key, value in config_dict.items():
             setattr(self, key, value)
 
+
 def normalize_images(images):
     """
-    Normalize image values using in-place operations in a chained manner.
+    Normalise les valeurs d'image en utilisant des opérations en place de manière chaînée.
     """
     return images.float().div(255.0).mul(2.0).add(-1)
 
 
-
 def get_optimizer(model, s):
     """
-    Parse optimizer parameters.
-    Input should be of the form:
+    Analyse les paramètres de l'optimiseur.
+    L'entrée doit être sous la forme :
         - "sgd,lr=0.01"
         - "adagrad,lr=0.1,lr_decay=0.05"
     """
@@ -151,7 +153,7 @@ def get_optimizer(model, s):
     else:
         raise Exception('Unknown optimization method: "%s"' % method)
 
-    # Validate optimizer parameters
+    # Valider les paramètres de l'optimiseur
     expected_args = list(inspect.signature(optim_fn.__init__).parameters)
     assert expected_args[:2] == ['self', 'params']
     if not all(k in expected_args[2:] for k in optim_params.keys()):
